@@ -18,7 +18,7 @@ async function* streamNews(
         index: process.env.VECTOR_INDEX!,
         path: "embedding",
         queryVector,
-        numCandidates: 100, // Increased for better recall
+        numCandidates: 100,
         limit: 10,
       },
     },
