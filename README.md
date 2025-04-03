@@ -31,6 +31,9 @@ News Article Agent is a full-stack JavaScript application designed for real-time
 - **NewsSearcher:** Retrieves relevant articles based on user queries and summarizes them using AI.
 - **LLM Hub:** A centralized service to integrate various LLM models, simplifying their use within the application.
 
+![alt text](systemdesign1.png)
+![alt text](systemdesign2.png)
+
 ## Optimizations
 
 ### Implemented
