@@ -1,0 +1,38 @@
+{
+  "name": "news-watcher",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node-dev src/main.ts",
+    "start": "NODE_ENV=production npx tsx src/main.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@langchain/core": "^0.3.48",
+    "@langchain/google-genai": "^0.2.5",
+    "@types/adm-zip": "^0.5.7",
+    "@types/xml2js": "^0.4.14",
+    "adm-zip": "^0.5.16",
+    "axios": "^1.8.4",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "kafkajs": "^2.2.4",
+    "mongoose": "^8.13.2",
+    "node-cron": "^3.0.3",
+    "playwright": "^1.51.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.2",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "@types/node": "^22.14.0",
+    "@types/node-cron": "^3.0.11",
+    "eslint": "^9.23.0",
+    "globals": "^16.0.0",
+    "typescript-eslint": "^8.28.0"
+  }
+}
