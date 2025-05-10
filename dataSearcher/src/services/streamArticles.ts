@@ -1,11 +1,10 @@
 import { Articles } from "../db";
 import { LLMHub } from "../llm";
-import { SearchArticlesInput, SearchArticlesOutput } from "../types";
+import { SearchArticlesOutput } from "../types";
 import { logger } from "../utils";
 
 async function* streamArticles(
-  _: unknown,
-  { query }: SearchArticlesInput
+  query: string
 ): AsyncGenerator<{ streamArticles: SearchArticlesOutput }> {
   logger(`Searching for: ${query}...`);
 
@@ -34,10 +33,10 @@ async function* streamArticles(
 
   const stream = llmHub.stream(
     `Coloque os artigos relacionados a: "${query}". 
-     juntos, separados por titulos. Se não há artigos relevantes, returne "Não foram encontrados artigos relevantes". Não escreva nenhum enunciado.
+     juntos, separados por titulos em markdown. . Se não há artigos relevantes, returne "Não foram encontrados artigos relevantes". Não escreva nenhum enunciado. Organize por 
      Artigos: ${JSON.stringify(
        articles
-     )}. Saniteze-os também, tirando as tags xml e conteúdos que não forem relevantes`
+     )}. Saniteze-os também, tirando as tags xml. Conserve todas as informações. Organize em Título, Conteúdo, Data e Documento PDF. `
   );
 
   let answer = "";
