@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import "tsconfig-paths/register"; // Enables path aliases
 import dotenv from "dotenv";
 import { connectDb } from "./db";
 import { logger, scrapeDOU } from "./utils";
-
 dotenv.config();
 
 connectDb().then(async () => {
