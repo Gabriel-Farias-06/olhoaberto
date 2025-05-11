@@ -15,4 +15,12 @@ export default defineConfig([
     extends: ["js/recommended"],
   },
   tseslint.configs.recommended,
+  {
+    files: ["**/*.{js,mjs,cjs,ts}"],
+    rules: {
+      "@typescript-eslint/no-namespace": "off",
+      "no-console": "off",
+      eqeqeq: ["error", "always"],
+    },
+  },
 ]);
