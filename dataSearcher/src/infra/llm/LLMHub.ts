@@ -39,7 +39,7 @@ class LLMHub {
     for await (const chunk of await this.chatModel.stream(messages)) {
       yield chunk.content;
     }
-    return this.chatModel.invoke(messages);
+    // return this.chatModel.invoke(messages);
   }
 }
 

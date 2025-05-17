@@ -19,7 +19,7 @@ const months = [
 export default async () => {
   try {
     logger("Scraping DOU...");
-    for (let year = 2002; year <= 2025; year++) {
+    for (let year = 2002; year <= new Date().getFullYear(); year++) {
       console.log({ year });
 
       const promises = Promise.all(

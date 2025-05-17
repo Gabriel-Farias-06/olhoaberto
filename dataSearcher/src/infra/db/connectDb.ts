@@ -1,5 +1,5 @@
+import { logger } from "@/utils";
 import mongoose from "mongoose";
-import { logger } from "../utils";
 
 async function connectDb() {
   try {

@@ -1,12 +1,17 @@
 import dotenv from "dotenv";
-import { connectDb } from "./db";
 import express from "express";
-import { streamArticles } from "./services";
+import {
+  loginController,
+  streamArticles,
+  updateInstructions,
+} from "./controllers";
+import { connectDb } from "./infra/db";
 
 dotenv.config();
 
 connectDb().then(async () => {
   const app = express();
+  app.use(express.json());
 
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -36,6 +41,28 @@ connectDb().then(async () => {
       console.error(err);
       res.status(500).end("Error during streaming");
     }
+  });
+
+  app.post("/cadastro", async (req, res) => {
+    // const { email, password } = req.body;
+
+    // const dados = loginController(email, password);
+    res.json({});
+  });
+
+  app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    const dados = loginController(email, password);
+    res.json(dados);
+  });
+
+  app.post("/armazenar-instrucoes", async (req, res) => {
+    const { instrucoes } = req.body;
+
+    const dados = updateInstructions(instrucoes);
+    res.json(dados);
+    res.status(204);
   });
 
   app.listen(4000, () => {

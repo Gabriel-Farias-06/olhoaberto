@@ -26,14 +26,14 @@ connectDb().then(async () => {
           }).embedQuery(`${date} ${pdfPage} ${content}`);
 
           logger(`${date} => Salvando artigo: ${path}...`);
-          const articles = new Articles({
+          const article = new Articles({
             date,
             pdfPage,
             path,
             content,
             embedding,
           });
-          await articles.save();
+          await article.save();
           logger(`${date} => ${path} => Artigo Salvo!`);
         }
       } catch (error) {

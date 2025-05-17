@@ -1,7 +1,7 @@
-import { Articles } from "../db";
-import { LLMHub } from "../llm";
+import { LLMHub } from "@/infra/llm";
 import { SearchArticlesOutput } from "../types";
 import { logger } from "../utils";
+import { Articles } from "@/infra/db";
 
 async function* streamArticles(
   query: string
@@ -30,6 +30,8 @@ async function* streamArticles(
     path,
     date,
   }));
+
+  // const config = (await Articles.find({}))[0];
 
   const stream = llmHub.stream(
     `Coloque os artigos relacionados a: "${query}". 
