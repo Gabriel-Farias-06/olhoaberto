@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import {
   loginController,
+  signUpController,
   streamArticles,
   updateInstructions,
 } from "./controllers";
@@ -17,7 +18,7 @@ connectDb().then(async () => {
     res.header("Access-Control-Allow-Origin", "http://localhost:3000");
     res.header(
       "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS"
+      "GET, POST, PUT, DELETE, OPTIONS",
     );
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     next();
@@ -25,6 +26,7 @@ connectDb().then(async () => {
 
   app.get("/stream", async (req, res) => {
     const query = req.query.q as string;
+    const email = req.query.email as string;
     console.log({ query });
 
     res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -33,7 +35,7 @@ connectDb().then(async () => {
     res.setHeader("Cache-Control", "no-cache");
 
     try {
-      for await (const chunk of streamArticles(query)) {
+      for await (const chunk of streamArticles(email, query)) {
         res.write(JSON.stringify(chunk.streamArticles) + "\n");
       }
       res.end();
@@ -43,26 +45,21 @@ connectDb().then(async () => {
     }
   });
 
-  app.post("/cadastro", async (req, res) => {
-    // const { email, password } = req.body;
+  app.post("/signup", async (req, res) => {
+    const { name, email, password } = req.body;
 
-    // const dados = loginController(email, password);
-    res.json({});
+    signUpController(name, email, password, res);
   });
 
   app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-
-    const dados = loginController(email, password);
-    res.json(dados);
+    loginController(email, password, res);
   });
 
-  app.post("/armazenar-instrucoes", async (req, res) => {
-    const { instrucoes } = req.body;
+  app.put("/instructions", async (req, res) => {
+    const { email, password, instructions } = req.body;
 
-    const dados = updateInstructions(instrucoes);
-    res.json(dados);
-    res.status(204);
+    updateInstructions(email, password, instructions, res);
   });
 
   app.listen(4000, () => {

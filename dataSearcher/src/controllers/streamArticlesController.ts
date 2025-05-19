@@ -1,10 +1,11 @@
 import { LLMHub } from "@/infra/llm";
 import { SearchArticlesOutput } from "../types";
 import { logger } from "../utils";
-import { Articles } from "@/infra/db";
+import { Articles, IAConfig, Users } from "@/infra/db";
 
 async function* streamArticles(
-  query: string
+  email: string,
+  query: string,
 ): AsyncGenerator<{ streamArticles: SearchArticlesOutput }> {
   logger(`Searching for: ${query}...`);
 
@@ -33,12 +34,13 @@ async function* streamArticles(
 
   // const config = (await Articles.find({}))[0];
 
+  const limitacions = await IAConfig.findOne();
   const stream = llmHub.stream(
-    `Coloque os artigos relacionados a: "${query}". 
-     juntos, separados por titulos em markdown. . Se não há artigos relevantes, returne "Não foram encontrados artigos relevantes". Não escreva nenhum enunciado. Organize por 
+    `Coloque os artigos relacionados a: "${query}" com as seguintes limitações: "${limitacions?.instructions}". 
+     juntos, separados por titulos em markdown. . Se não há artigos relevantes, retorne "Não foram encontrados artigos relevantes". Não escreva nenhum enunciado. Organize por 
      Artigos: ${JSON.stringify(
-       articles
-     )}. Saniteze-os também, tirando as tags xml. Conserve todas as informações. Organize em Título, Conteúdo, Data e Documento PDF. `
+       articles,
+     )}. Saniteze-os também, tirando as tags xml. Conserve todas as informações. Organize em Título, Conteúdo, Data e Documento PDF. `,
   );
 
   let answer = "";
@@ -51,6 +53,20 @@ async function* streamArticles(
       },
     };
   }
+
+  await Users.updateOne(
+    { email },
+    {
+      $push: {
+        conversations: {
+          messages: [
+            { content: query, role: "user" },
+            { content: answer, role: "admin" },
+          ],
+        },
+      },
+    },
+  );
 }
 
 export default streamArticles;
