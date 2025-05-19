@@ -82,7 +82,8 @@ connectDb().then(async () => {
 
   app.put('/updateUser', authenticatedMiddlewareController, async (req, res) => {
     updateUserController(req, res);
-  }
+  })
+  
   app.delete('/deleteUser', authenticatedMiddlewareController, async (req, res) => {
     deleteUserController(req, res);
   })
