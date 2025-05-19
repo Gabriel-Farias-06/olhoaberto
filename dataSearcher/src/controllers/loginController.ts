@@ -1,9 +1,8 @@
 import { Users } from "@/infra/db";
 import bcrypt from "bcryptjs";
-import { Response } from "express";
-import jwt from "jsonwebtoken";
+import { Response, Request } from "express";
 
-export default async (email: string, password: string, res: Response) => {
+export default async (email: string, password: string, req: Request, res: Response) => {
   try {
     const user = await Users.findOne({ email });
     if (!user) {
@@ -14,19 +13,12 @@ export default async (email: string, password: string, res: Response) => {
     if (!passwordMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-
-    const token = jwt.sign(
-      {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        conversations: user.conversations,
-      },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "2h" },
-    );
-
-    return res.status(200).json({ token });
+    req.session.user = { 
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name
+    };
+    return res.status(200).json({ conversations: user.conversations });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return res.status(500).json({ message: "Internal Server Error" });

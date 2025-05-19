@@ -1,21 +1,14 @@
 import { IAConfig, Users } from "@/infra/db";
 import { Response } from "express";
-import bcrypt from "bcryptjs";
 
 export default async (
   email: string,
-  password: string,
   instructions: string,
   res: Response,
 ) => {
   try {
     const user = await Users.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 

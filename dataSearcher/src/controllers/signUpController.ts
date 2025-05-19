@@ -1,11 +1,12 @@
 import { Users } from "@/infra/db";
-import { Response } from "express";
+import { Response, Request } from "express";
 import bcrypt from "bcryptjs";
 
 export default async (
   name: string,
   email: string,
   password: string,
+  req: Request,
   res: Response,
 ) => {
   const regexpEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
