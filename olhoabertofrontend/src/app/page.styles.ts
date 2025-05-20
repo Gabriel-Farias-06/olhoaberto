@@ -208,7 +208,7 @@ top: 55px;
 right: 20px;
 z-index: 1000;
 
-item {
+.item {
     font-size: 0;
     padding: 7px 3px;
     border-bottom: 2px solid var(--border-chat-color);
@@ -231,15 +231,8 @@ item {
     color: var(--text-color);
     cursor: pointer;
 
-    i {
+    .fa-solid, .fa-regular  {
         padding-right: 10px;
-    }
-
-    .fa-solid {
-        color: inherit;
-    }
-
-    .fa-regular {
         color: inherit;
     }
 
