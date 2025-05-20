@@ -54,15 +54,15 @@ async function* streamArticles(
     };
   }
 
-  if(email !== undefined)
+  if (email !== undefined)
     await Users.updateOne(
       { email },
       {
-        $push: {
-          conversations: {
+        conversations: {
+          $push: {
             messages: [
               { content: query, role: "user" },
-              { content: answer, role: "admin" },
+              { content: answer, role: "assistant" },
             ],
           },
         },
