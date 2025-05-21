@@ -3,8 +3,13 @@
 import React from "react";
 
 import "./login.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { useState } from "react";
 
 export default function Login() {
+const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className="login-page">
         <main className="login-container">
@@ -18,7 +23,13 @@ export default function Login() {
                 <input type="email" name="email" id="email" className="login-input" placeholder="Digite seu e-mail..." />
                 
                 <label htmlFor="password" className="login-label password-text">Digite a sua senha</label>
-                <input type="password" name="password" id="password" className="login-input" placeholder="Digite sua senha..." />
+                <div className="login-input-wrapper">
+                    <input type={showPassword ? "text" : "password"} id="password" className="login-input password" placeholder="Digite sua senha..." />
+                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} className="fa fa-eye toggle-password" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    />
+                </div>
+                
                 <div className="login-section-box">
                     <p>
                        <a href="./cadastro">Não tem uma conta? Clique aqui</a> 
