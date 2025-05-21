@@ -113,7 +113,9 @@ import {
   faCircleHalfStroke, 
   faGear, 
   faUserGear, 
-  faXmark 
+  faXmark,
+  faEye, 
+  faEyeSlash 
 } from '@fortawesome/free-solid-svg-icons';
 import { 
   faSquarePlus, 
@@ -164,6 +166,8 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState("alert");
   const [isLightMode, setIsLightMode] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const userIconRef = useRef<HTMLDivElement>(null);
@@ -362,9 +366,55 @@ export default function Home() {
                   </ModalSidebar>
 
                   <ModalTabContent>
-                      <div className={`tab-content ${activeTab !== "alert" ? "hidden" : ""}`} id="alert">criar alerta</div>
-                      <div className={`tab-content ${activeTab !== "profile" ? "hidden" : ""}`} id="profile">perfil do usuario</div>
-                      <div className={`tab-content ${activeTab !== "admin" ? "hidden" : ""}`} id="admin">admin só admin</div>
+                      <div className={`tab-content ${activeTab !== "alert" ? "hidden" : ""}`} id="alert">
+                      criar alerta
+                      </div>
+                      <div className={`tab-content ${activeTab !== "profile" ? "hidden" : ""}`} id="profile">
+                        <div className="profile-header">
+                          <h2>Configurações do perfil</h2>
+                        </div>
+
+                        <div className="profile-section">
+                            <label htmlFor="newusername" className="profile-label">Digite como o chat deve te chamar</label>
+                            <input type="text" className="profile-input" name="newusername" id="username" placeholder="Digite como o chat deve te chamar..." />
+
+                            <label htmlFor="oldpassword" className="profile-label">Digite sua senha atual</label>
+                            <div className="profile-input-wrapper">
+                                <input type={showOldPassword ? "text" : "password"} className="profile-input" name="oldpassword" id="oldpassword" placeholder="Digite sua senha atual..." />
+                                <FontAwesomeIcon icon={showOldPassword ? faEyeSlash : faEye} className="fa fa-eye toggle-password" 
+                                onClick={() => setShowOldPassword(!showOldPassword)}
+                                />
+                            </div>
+
+                            <div className="profile-checkbox">
+                                <input type="checkbox" name="change-password" id="change-password" />
+                                <label htmlFor="change-password">Desejo alterar a minha senha</label>
+                            </div>
+
+                            <label htmlFor="newpassword" className="profile-label">Digite sua nova senha</label>
+                            <div className="profile-input-wrapper">
+                                <input type={showNewPassword ? "text" : "password"} className="profile-input" name="newpassword" id="newpassword" placeholder="Digite sua nova senha..." />
+                                <FontAwesomeIcon icon={showNewPassword ? faEyeSlash : faEye} className="fa fa-eye toggle-password" 
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                />
+                            </div>
+
+                            <div className="profile-buttons">
+                                <button type="button" className="profile-button cancel">Cancelar</button>
+                                <button type="submit" className="profile-button save">Salvar</button>
+                            </div>
+
+                            <footer className="profile-footer">
+                                <div className="profile-alert">
+                                </div>
+                            </footer>
+                            
+                        </div>
+                      
+                      </div>
+                      <div className={`tab-content ${activeTab !== "admin" ? "hidden" : ""}`} id="admin">
+                      admin só admin
+                      </div>
                   </ModalTabContent>
 
               </ModalBody>

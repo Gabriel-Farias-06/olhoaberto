@@ -280,7 +280,7 @@ align-items: center;
 padding: 20px 25px;
 border-bottom: 2px solid var(--border-chat-color);
 
-fa-solid {
+.fa-solid {
     font-size: 25px;
 }
 
@@ -288,7 +288,7 @@ fa-solid {
 export const ModalBody = styled.div`
 
 display: flex;
-height: 300px;
+height: 400px;
 max-height: 60%;
 overflow-y: auto;
 
@@ -308,6 +308,7 @@ li  {
         background-color: var(--bg-color);
         color: var(--text-color);
         font-size: 15px;
+        font-weight: 600; 
         display: block;
         width: 100%;
         padding: 7px 15px;
@@ -332,9 +333,11 @@ export const ModalTabContent = styled.div`
 
 flex: 1;
 padding: 20px;
+overflow-y: auto;
 
 .tab-content {
     display: none;
+    
 
     &.hidden {
         display: none;
@@ -343,9 +346,163 @@ padding: 20px;
     &:not(.hidden) {
         display: block;
     }
+
+    &#profile {
+        .profile-header {
+            border-bottom: 2px solid var(--border-login-cadastro-color);
+            padding: 0 10px 10px 10px;
+        }
+
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            font-size: 13px;
+
+            .profile-label {
+                margin: 20px 0 3px 5px ;
+            }
+
+            .profile-input {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+                border: 1px solid var(--border-button-login-cadastro-color);
+                border-radius: 10px;
+                width: 100%;
+                margin: 5px 0 0 0;
+                padding: 10px 7px;
+            }
+
+            .profile-input-wrapper {
+                position: relative;
+    
+                .profile-input {
+                    padding-right: 30px;
+                }
+
+                .toggle-password {
+                    position: absolute;
+                    top: 55%;
+                    right: 13px;
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                }
+            }
+
+            .profile-checkbox {
+                display: flex;
+                align-items: center;
+                margin: 10px 5px 0 5px; 
+
+                input {
+                    appearance: none;
+                    position: relative;
+                    background-color: transparent;
+                    border: 2px solid var(--border-color);
+                    border-radius: 4px;
+                    margin-right: 5px;
+                    width: 16px;
+                    height: 16px;
+                    cursor: pointer;
+                }
+
+                input[type="checkbox"]:checked {
+                    background-color: var(--border-color);
+                }
+                
+                input[type="checkbox"]:checked::after {
+                    content: "✔";
+                    color: white;
+                    font-size: 12px;
+                    position: absolute;
+                    top: -2px;
+                    left: 1px;
+                }
+
+            }
+
+            .profile-buttons {
+                display: flex;
+                justify-content: flex-end;
+                padding: 15px 7px 0px 7px;
+
+                .profile-button {
+                    margin-left: 7px;
+                    border-radius: 16px;
+                    cursor: pointer;
+                    transition-duration: 0.2s;
+
+                    &.cancel {
+                        background-color: var(--bg-color);
+                        border: 1px solid var(--border-button-login-cadastro-color);
+                        color: var(--text-color);
+                        padding: 5px 7px;
+                    }
+
+                    &.save {
+                        background-color: var(--bg-button-login-cadastro-color);
+                        color: var(--text-second-color);
+                        padding: 5px 13px;
+                    }
+
+                    &:hover {
+                        background-color: var(--text-color);
+                        color: var(--bg-color);
+                    }
+
+                }
+            }
+
+                .profile-footer.active {
+                    background-color: var(--bg-alert-color);
+                    color: var(--text-alert-color);
+                    margin:  0 30px 20px 30px;
+                    padding: 7px;
+                    border-radius: 7px;
+                    display: flex;
+                    align-items: center;
+                }
+
+        }
+    }
 }
 
 
-
 `
+
+/*
+
+<div className={`tab-content ${activeTab !== "profile" ? "hidden" : ""}`} id="profile">
+<div className="profile-header">
+    <h2>Configurações do perfil</h2>
+</div>
+
+<div className="profile-section">
+    <label htmlFor="newusername" className="profile-label">Digite como o chat deve te chamar</label>
+    <input type="text" className="profile-input" name="newusername" id="username" placeholder="Digite como o chat deve te chamar..." />
+
+    <label htmlFor="oldpassword" className="profile-label">Digite sua senha atual</label>
+    <div className="profile-input-wrapper">
+        <input type="password" className="profile-input" name="oldpassword" id="oldpassword" placeholder="Digite sua senha atual..." />
+        <i></i>
+    </div>
+
+    <div className="profile-checkbox">
+        <input type="checkbox" name="change-password" id="change-password" />
+        <label htmlFor="change-password">Desejo alterar a minha senha</label>
+    </div>
+
+    <label htmlFor="newpassword" className="profile-label">Digite sua nova senha</label>
+    <div className="profile-input-wrapper">
+        <input type="password" className="profile-input" name="newpassword" id="newpassword" placeholder="Digite sua nova senha..." />
+        <i className="fa fa-eye toggle-password" data-target="newpassword"></i>
+    </div>
+
+    <div className="profile-buttons">
+        <button type="button" className="profile-button cancel">Cancelar</button>
+        <button type="submit" className="profile-button save">Salvar</button>
+    </div>
+</div>
+
+</div>
+ */
 
