@@ -1,34 +1,3 @@
-// import styled from "styled-components";
-
-// export const Container = styled.div`
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
-//   width: 100vw;
-//   height: 100vh;
-// `;
-
-// export const Chat = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   width: 100%;
-//   height: 100%;
-
-//   .messages {
-//     display: flex;
-//     justify-content: space-between;
-//     align-items: center;
-//     flex-direction: column;
-//     padding: 1rem;
-//     width: 100%;
-//     height: 92%;
-//   }
-
-//   .answer {
-//     height: 90%;
-//     overflow-y: scroll;
-//   }
-// `;
 
 import styled from "styled-components";
 
@@ -176,7 +145,7 @@ background: var(--bg-color);
 
 input {
     flex: 1;
-    padding: 10px;
+    padding: 20px;
     border-radius: 15px 0 0 15px;
     background-color: var(--bg-input-and-button-color);
     color: var(--text-color);
@@ -467,41 +436,3 @@ overflow-y: auto;
 
 
 `
-
-/*
-
-<div className={`tab-content ${activeTab !== "profile" ? "hidden" : ""}`} id="profile">
-<div className="profile-header">
-    <h2>Configurações do perfil</h2>
-</div>
-
-<div className="profile-section">
-    <label htmlFor="newusername" className="profile-label">Digite como o chat deve te chamar</label>
-    <input type="text" className="profile-input" name="newusername" id="username" placeholder="Digite como o chat deve te chamar..." />
-
-    <label htmlFor="oldpassword" className="profile-label">Digite sua senha atual</label>
-    <div className="profile-input-wrapper">
-        <input type="password" className="profile-input" name="oldpassword" id="oldpassword" placeholder="Digite sua senha atual..." />
-        <i></i>
-    </div>
-
-    <div className="profile-checkbox">
-        <input type="checkbox" name="change-password" id="change-password" />
-        <label htmlFor="change-password">Desejo alterar a minha senha</label>
-    </div>
-
-    <label htmlFor="newpassword" className="profile-label">Digite sua nova senha</label>
-    <div className="profile-input-wrapper">
-        <input type="password" className="profile-input" name="newpassword" id="newpassword" placeholder="Digite sua nova senha..." />
-        <i className="fa fa-eye toggle-password" data-target="newpassword"></i>
-    </div>
-
-    <div className="profile-buttons">
-        <button type="button" className="profile-button cancel">Cancelar</button>
-        <button type="submit" className="profile-button save">Salvar</button>
-    </div>
-</div>
-
-</div>
- */
-

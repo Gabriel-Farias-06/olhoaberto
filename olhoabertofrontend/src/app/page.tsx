@@ -1,109 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { Navbar, Sidebar } from "./@components";
-// import * as S from "./page.styles";
-// import { marked } from "marked";
-// import { Accordion, AccordionItem } from "@heroui/accordion";
-
-// type QuerySources = {
-//   pdfPage: string;
-//   path: string;
-//   date: string;
-// };
-
-// type QueryAnswer = {
-//   answer: string;
-//   sources: QuerySources[];
-// };
-
-// export default function Home() {
-//   const [query, setQuery] = useState("");
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [answer, setAnswer] = useState<QueryAnswer>();
-
-//   const submitQuery = async () => {
-//     setIsLoading(true);
-//     const res = await fetch(`http://localhost:4000/stream?q=${query}`);
-//     const reader = res.body?.getReader();
-//     const decoder = new TextDecoder("utf-8");
-//     let buffer = "";
-
-//     while (true) {
-//       if (reader) {
-//         const { done, value } = await reader?.read();
-
-//         if (done) break;
-//         buffer += decoder.decode(value, { stream: true });
-
-//         const lines = buffer.split("\n");
-//         buffer = lines.pop() || "";
-
-//         setIsLoading(false);
-//         for (const line of lines) {
-//           if (!line.trim()) continue;
-//           const data = JSON.parse(line) as QueryAnswer;
-//           setAnswer({
-//             answer: await marked(data.answer),
-//             sources: data.sources,
-//           });
-//         }
-//       }
-//     }
-//   };
-
-//   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     setQuery(e.currentTarget.value);
-//   };
-
-//   useEffect(() => {
-//     console.log(answer);
-//   }, [answer]);
-
-//   return (
-//     <S.Container>
-//       <Sidebar />
-//       <S.Chat>
-//         <Navbar />
-//         <div className="messages">
-//           <div className="answer">
-//             {answer && (
-//               <div>
-//                 <div dangerouslySetInnerHTML={{ __html: answer?.answer }}></div>
-//                 <Accordion variant="shadow">
-//                   <ul>
-//                     {answer.sources.map(({ date, path, pdfPage }) => (
-//                       <AccordionItem
-//                         key="1"
-//                         aria-label="Accordion 1"
-//                         title="Accordion 1"
-//                       >
-//                         <li>{date}</li>
-//                         <li>{path}</li>
-//                         <li>{pdfPage}</li>
-//                       </AccordionItem>
-//                     ))}
-//                   </ul>
-//                 </Accordion>
-//               </div>
-//             )}
-//           </div>
-
-//           <div className="input-box">
-//             <input type="text" className="input" onChange={handleInputChange} />
-//             <button onClick={() => submitQuery()}>
-//               {isLoading ? "Carregando..." : "Enviar"}
-//             </button>
-//           </div>
-//         </div>
-//       </S.Chat>
-//     </S.Container>
-//   );
-// }
-
-
-// Versão Miguel
-
 "use client";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -198,9 +92,6 @@ export default function Home() {
     try {
 
       const res = await fetch(`http://localhost:4000/stream?q=${query}`);
-
-      // const text = await res.text();
-      // console.log("Resposta completa do backend:", text);
       
       const reader = res.body?.getReader();
       const decoder = new TextDecoder("utf-8");
@@ -377,7 +268,7 @@ export default function Home() {
 
         <ChatMessages>
           <div className="message user">Quanto o governo investiu em educação?</div>
-          <div className="message bot">Em 2025, foi investido quantos reais bilhões em educação?</div>
+          <div className="message bot">Em 2025, foi investido quantos reais em educação?</div>
 
           {messages.map((msg, index) => (
             <div key={index} className={`message ${msg.sender}`}
