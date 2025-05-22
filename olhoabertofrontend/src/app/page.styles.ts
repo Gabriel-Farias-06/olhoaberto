@@ -171,8 +171,7 @@ background: var(--bg-chat-messages-color);
 export const ChatInput = styled.div`
 
 display: flex;
-padding: 10px;
-padding-bottom: 30px;
+padding: 20px 80px 30px 80px;
 background: var(--bg-color);
 
 input {
