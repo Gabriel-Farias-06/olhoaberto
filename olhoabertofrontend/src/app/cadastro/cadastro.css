@@ -1,0 +1,110 @@
+.cadastro-page {
+    background-color: var(--bg-login-cadastro-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.cadastro-container {
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    width: 450px;
+    border-radius: 20px;
+}
+
+.cadastro-header {
+    border-bottom: 2px solid var(--border-login-cadastro-color);
+    padding: 15px 20px 10px 20px;
+}
+
+.cadastro-section {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    padding: 20px;
+    padding-bottom: 15px;
+}
+
+.cadastro-label {
+    margin-left: 5px;
+}
+
+.cadastro-input-wrapper {
+    position: relative;
+}
+
+.cadastro-input {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-button-login-cadastro-color);
+    border-radius: 10px;
+    margin: 5px 0 13px 0;
+    padding: 10px 7px;
+}
+
+.cadastro-input.password {
+    width: 100%;
+    padding-right: 30px; 
+    margin-bottom: 7px;   
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 13px;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.cadastro-section-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding: 0 10px;
+}
+
+.cadastro-section-box a {
+    font-size: 13px;
+    color: var(--text-href-color);
+    text-decoration: underline;
+}
+
+.cadastro-button {
+    margin-left: 7px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition-duration: 0.2s;
+}
+
+.cadastro-button.cancel {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-button-login-cadastro-color);
+    color: var(--text-color);
+    padding: 5px 7px;
+}
+
+.cadastro-button.enter {
+    background-color: var(--bg-button-login-cadastro-color);
+    color: var(--text-second-color);
+    padding: 5px 13px;
+}
+
+.cadastro-footer.active {
+    background-color: var(--bg-alert-color);
+    color: var(--text-alert-color);
+    margin:  0 30px 20px 30px;
+    padding: 7px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+}
+
+.cadastro-button:hover {
+    background-color: var(--text-color);
+    color: var(--bg-color);
+}
