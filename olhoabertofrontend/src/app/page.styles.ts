@@ -41,6 +41,12 @@ export const SidebarChats = styled.div`
 padding: 15px 0px;
 overflow-y: auto;
 
+.name-user {
+    padding: 0px 5px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
 .chat-group {
     padding: 15px 5px 7px 5px;
     margin-bottom: 5px;
@@ -67,21 +73,38 @@ overflow-y: auto;
 
 `
 export const SidebarFooter = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 20px;
+  font-size: 17px;
+  font-weight: bold;
 
-display: flex;
-flex-direction: row;
-align-items: center;
-margin-top: auto;
-padding-top: 20px;
-font-size: 17px;
-font-weight: bold;
+  .sidebar-footer-btn {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color);
+    font: inherit;
+    padding: 0;
+    transition: color 0.1s ease;
 
-.fa-right-from-bracket {
-    font-size: 15px;
-    padding-right: 5px;
-}
+    &:hover {
+      color: var(--text-hover-color);
+    }
 
+    .fa-right-from-bracket {
+      font-size: 15px;
+      padding-right: 5px;
+      color: inherit; /* para herdar a cor do botão */
+    }
+  }
 `
+
+
 export const ChatContainer = styled.div`
 
 flex: 1;
@@ -145,7 +168,7 @@ background: var(--bg-color);
 
 input {
     flex: 1;
-    padding: 20px;
+    padding: 10px 15px;
     border-radius: 15px 0 0 15px;
     background-color: var(--bg-input-and-button-color);
     color: var(--text-color);
