@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 import express from "express";
 import session from "express-session";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 
 import {
   loginController,
@@ -19,7 +21,16 @@ dotenv.config();
 
 connectDb().then(async () => {
   const app = express();
+
+  app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  }));
+
   app.use(express.json());
+  app.use(cookieParser());
 
   app.use(session({
     secret: process.env.SESSION_SECRET as string,
@@ -27,20 +38,11 @@ connectDb().then(async () => {
     saveUninitialized: false,
     cookie: {
       secure: false,
-      maxAge: 30 * 60 * 1000
+      httpOnly: true,
+      maxAge: 30 * 60 * 1000,
+      sameSite: "lax"
     }
   }));
-
-  app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS",
-    );
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
-    next();
-  });
 
   app.get("/stream", async (req, res) => {
     const query = req.query.q as string;
@@ -71,15 +73,21 @@ connectDb().then(async () => {
 
   app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-    loginController(email, password, req, res);
+
+    await loginController(email, password, req, res);
   });
 
   app.post('/logout', async (req, res) => {
-    req.session.destroy(() => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Erro ao fazer logout' })
+      }
+      res.clearCookie('connect.sid')
       res.status(200).json({ message: 'Logout sucessful' })
     })
   })
 
+  /* COMENTEI PQ ESTAVA DANDO ERRO
   app.put('/updateUser', authenticatedMiddlewareController, async (req, res) => {
     updateUserController(req, res);
   })
@@ -93,6 +101,25 @@ connectDb().then(async () => {
     const { instructions } = req.body;
     const { email } = req.session.user;
     updateInstructions(email, instructions, res);
+  });
+*/
+
+  app.get('/me', async (req, res) => {
+    console.info('Cookies recebidos:', req.headers.cookie)
+    console.info('Sessão:', req.session);
+
+    if (req.session?.user?.id) {
+      res.status(200).json({
+        message: 'Autenticado',
+        user: {
+          id: req.session.user.id,
+          name: req.session.user.name,
+          email: req.session.user.email
+        }
+      });
+    } else {
+      res.status(401).json({ message: 'Não autenticado' });
+    }
   });
 
   app.listen(4000, () => {
