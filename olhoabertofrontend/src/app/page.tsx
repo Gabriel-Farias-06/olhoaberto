@@ -40,6 +40,8 @@ import {
 import { marked } from "marked";
 import { Accordion, AccordionItem } from "@heroui/accordion";
 import { mark, script } from 'framer-motion/client';
+import { useRouter } from 'next/navigation';
+import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 
 type QuerySources = {
   pdfPage: string;
@@ -59,6 +61,9 @@ type Message = {
 
 
 export default function Home() {
+  const router = useRouter();
+  const [userName, setUserName] = useState<string | null>(null)
+ 
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [answer, setAnswer] = useState<QueryAnswer>();
@@ -74,13 +79,16 @@ export default function Home() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const userIconRef = useRef<HTMLDivElement>(null);
 
+  const toggleTheme = () => setIsLightMode((prev) => !prev);
   const toggleUserMenu = () => setShowUserMenu((prev) => !prev);
   const openModal = (tab: string) => {
     setActiveTab(tab);
     setShowModal(true);
   };
 
-  const toggleTheme = () => setIsLightMode((prev) => !prev);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.currentTarget.value);
+  };
 
   const submitQuery = async () => {
     if (!query.trim()) return;
@@ -92,7 +100,7 @@ export default function Home() {
     try {
 
       const res = await fetch(`http://localhost:4000/stream?q=${query}`);
-      
+
       const reader = res.body?.getReader();
       const decoder = new TextDecoder("utf-8");
 
@@ -119,8 +127,8 @@ export default function Home() {
           try {
             const { answer, sources: partialSources } = JSON.parse(line);
             responseText = answer;
-            
-            if(Array.isArray(partialSources)) {
+
+            if (Array.isArray(partialSources)) {
               sources = partialSources;
             }
           } catch (err) {
@@ -156,11 +164,24 @@ export default function Home() {
     }
   };
 
-   
+  async function handleLogout() {
+    try {
+      const res = await fetch("http://localhost:4000/logout", {
+        method: "POST",
+        credentials: "include",
+      });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.currentTarget.value);
-  };
+      if (res.ok) {
+        router.push("/login")
+      } else {
+        const data = await res.json();
+        alert("Erro ao sair: " + data.message)
+      }
+    } catch (error) {
+      console.error("Erro no logout:", error);
+      alert("Erro inesperado ao tentar sair.")
+    }
+  }
 
   useEffect(() => {
     console.log(answer);
@@ -195,6 +216,23 @@ export default function Home() {
     }
   }, [])
 
+  useEffect(() => {
+    async function checkAuth() {
+      const res = await fetch("http://localhost:4000/me", {
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      console.log('Status da resposta:', data);
+
+      if (!res.ok) {
+        router.push("/login");
+      } else {
+        setUserName(data.user?.name || null)
+      }
+    }
+    checkAuth();
+  }, [router]);
 
   return (
     <AppContainer>
@@ -205,6 +243,9 @@ export default function Home() {
           <FontAwesomeIcon icon={faSquarePlus} className="fa-regular fa-square-plus" />
         </SidebarHeader>
         <SidebarChats>
+          <div className="name-user">
+            {userName ? `Olá, ${userName}` : "Carregando..."}
+          </div>
           <div className="chat-group">
             <p>Hoje</p>
             <ul className="conversation-list">
@@ -221,8 +262,10 @@ export default function Home() {
           </div>
         </SidebarChats>
         <SidebarFooter>
-          <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" />
-          <p>Sair</p>
+          <button className="sidebar-footer-btn" onClick={handleLogout}>
+            <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" />
+            <p>Sair</p>
+          </button>
         </SidebarFooter>
       </Sidebar>
 
@@ -257,7 +300,7 @@ export default function Home() {
                   </button>
                 </li>
                 <li className="item logout">
-                  <button className="open-modal-btn" data-tab="logout">
+                  <button className="open-modal-btn" data-tab="logout" onClick={handleLogout}>
                     <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" /> Sair
                   </button>
                 </li>
