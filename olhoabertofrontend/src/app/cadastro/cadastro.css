@@ -59,12 +59,24 @@
     cursor: pointer;
 }
 
+.password-requirements {
+    padding: 5px 10px;
+}
+
+.password-requirements ul {
+    padding: 2px 20px;
+}
+
+.password-requirements li {
+    list-style-type: disc;
+}
+
 .cadastro-section-box {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-top: 15px;
+    margin-top: 13px;
     padding: 0 10px;
 }
 
@@ -94,15 +106,31 @@
     padding: 5px 13px;
 }
 
-.cadastro-footer.active {
-    background-color: var(--bg-alert-color);
-    color: var(--text-alert-color);
+.cadastro-alert {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.cadastro-alert.succes {
+    background-color: var(--bg-alert-sucess-color);
+    color: var(--text-alert-sucess-color);
     margin:  0 30px 20px 30px;
     padding: 7px;
     border-radius: 7px;
-    display: flex;
-    align-items: center;
 }
+
+.cadastro-alert.error {
+    background-color: var(--bg-alert-error-color);
+    color: var(--text-alert-error-color);
+    margin:  0 30px 20px 30px;
+    padding: 7px;
+    border-radius: 7px;
+}
+
 
 .cadastro-button:hover {
     background-color: var(--text-color);
