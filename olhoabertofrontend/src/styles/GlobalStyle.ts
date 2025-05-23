@@ -7,7 +7,6 @@ const GlobalStyle = createGlobalStyle`
       --bg-modal-color: #0c0c0c7e;
       --text-color: #fff;
       --text-second-color: #000;
-      --text-alert-color: #ff0000;
       --bg-alert-color: rgb(255, 0, 0, 0.2);
       --bg-sidebar-color: #090909;
       --border-color: #333;
@@ -23,6 +22,10 @@ const GlobalStyle = createGlobalStyle`
       --bg-hover-color: #222222;
       --text-hover-color: #9b9b9b;
       --text-href-color: #B8B8B8;
+      --bg-alert-sucess-color: #d4edda;
+      --text-alert-sucess-color: #155724;
+      --bg-alert-error-color: #f8d7da;
+      --text-alert-error-color: #721c24;
   }
 
   :root.light {
@@ -30,7 +33,6 @@ const GlobalStyle = createGlobalStyle`
       --bg-modal-color: #ffffffcc;
       --text-color: #000;
       --text-second-color: #666;
-      --text-alert-color: #d60000;
       --bg-alert-color: rgba(255, 0, 0, 0.1);
       --bg-sidebar-color: #ffffff;
       --border-color: #ccc;
@@ -46,6 +48,10 @@ const GlobalStyle = createGlobalStyle`
       --bg-hover-color: #e0e0e0;
       --text-hover-color: #333333;
       --text-href-color: #007bff;
+      --bg-alert-sucess-color: #d4edda;
+      --text-alert-sucess-color: #155724;
+      --bg-alert-error-color: #f8d7da;
+      --text-alert-error-color: #721c24;
   } 
 
   *, *::before, *::after {
