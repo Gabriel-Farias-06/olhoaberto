@@ -87,22 +87,43 @@ connectDb().then(async () => {
     })
   })
 
-  /* COMENTEI PQ ESTAVA DANDO ERRO
-  app.put('/updateUser', authenticatedMiddlewareController, async (req, res) => {
-    updateUserController(req, res);
-  })
-  
-  app.delete('/deleteUser', authenticatedMiddlewareController, async (req, res) => {
-    deleteUserController(req, res);
-  })
-  
+  app.put(
+    "/updateUser",
+    authenticatedMiddlewareController,
+    async (req, res) => {
+      const { password, newName } = req.body || {};
+      if (!password || !newName) {
+        res.status(400).json({ message: "Password and new name are required" });
+        return;
+      }
+      updateUserController(req, res);
+    },
+  );
 
-  app.put("/instructions", authenticatedMiddlewareController, async (req, res) => {
-    const { instructions } = req.body;
-    const { email } = req.session.user;
-    updateInstructions(email, instructions, res);
-  });
-*/
+  app.delete(
+    "/deleteUser",
+    authenticatedMiddlewareController,
+    async (req, res) => {
+      const { password } = req.body || {};
+      if (!password) {
+        res.status(400).json({ message: "Password is required" });
+        return;
+      }
+
+      deleteUserController(req, res);
+    },
+  );
+
+  app.put(
+    "/instructions",
+    authenticatedMiddlewareController,
+    async (req, res) => {
+      const { instructions } = req.body;
+      const { email } = req.session.user!;
+      updateInstructions(email, instructions, res);
+    },
+  );
+
 
   app.get('/me', async (req, res) => {
     console.info('Cookies recebidos:', req.headers.cookie)
