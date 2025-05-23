@@ -1,3 +1,11 @@
+.cadastro-input:-webkit-autofill,
+.cadastro-input:-webkit-autofill:focus,
+.cadastro-input:-webkit-autofill:hover {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-color) inset;
+  -webkit-text-fill-color: var(--text-color);
+}
+
+
 .cadastro-page {
     background-color: var(--bg-login-cadastro-color);
     color: var(--text-color);
