@@ -18,16 +18,25 @@ height: 100vh;
     color: var(--text-hover-color);
 }
 
-`
-export const Sidebar = styled.div`
 
-display: flex;
-flex-direction: column;
-width: 350px;
-height: 100vh;
-background-color: var(--bg-sidebar-color);
-padding: 25px 35px;
 `
+
+interface SidebarProps {
+  isOpen: boolean;
+}
+
+export const Sidebar = styled.div<SidebarProps>`
+  display: flex;
+  flex-direction: column;
+  width: ${props => (props.isOpen ? '350px' : '0px')};
+  height: 100vh;
+  background-color: var(--bg-sidebar-color);
+  padding: ${props => (props.isOpen ? '25px 35px' : '0px')}; 
+  overflow-x: hidden; 
+  transition: width 0.3s ease-in, padding 0.3s ease-in, opacity 0.3s ease-in;
+  opacity: ${props => (props.isOpen ? '1' : '0')};
+`;
+
 export const SidebarHeader = styled.div`
 
 display: flex;
@@ -35,6 +44,11 @@ justify-content: space-between;
 align-items: center;
 padding-bottom: 15px;
 font-size: 25px;
+
+.mode-open-close {
+    all: unset;
+    margin-right: 20px;
+}
 
 `
 export const SidebarChats = styled.div`
@@ -117,9 +131,23 @@ export const ChatHeader = styled.div`
 display: flex;
 justify-content: space-between;
 align-items: center;
-padding: 25px 15px;
+padding: 25px 20px;
 background: var(--bg-color);
 font-size: 25px;
+
+.box-left {
+    display: flex;
+    flex-direction: row;
+
+    .mode-open-close {
+        all: unset;
+        margin-right: 20px;
+    }
+
+    .notify-icon {
+        transition: transform 0.3s ease, color 0.3s ease, opacity 0.3s ease;
+    }
+}
 
 .box-right {
     display: flex;
@@ -311,6 +339,7 @@ li  {
 
         .fa-regular, .fa-solid {
             padding-right: 5px  ;
+            background: red;
         }
 
         &.active, &:hover {

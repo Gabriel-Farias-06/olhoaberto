@@ -63,7 +63,7 @@ type Message = {
 export default function Home() {
   const router = useRouter();
   const [userName, setUserName] = useState<string | null>(null)
- 
+
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [answer, setAnswer] = useState<QueryAnswer>();
@@ -75,15 +75,21 @@ export default function Home() {
   const [isLightMode, setIsLightMode] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const userIconRef = useRef<HTMLDivElement>(null);
 
   const toggleTheme = () => setIsLightMode((prev) => !prev);
   const toggleUserMenu = () => setShowUserMenu((prev) => !prev);
+
   const openModal = (tab: string) => {
     setActiveTab(tab);
     setShowModal(true);
+  };
+
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -237,9 +243,11 @@ export default function Home() {
   return (
     <AppContainer>
 
-      <Sidebar>
+      <Sidebar isOpen={isOpen}>
         <SidebarHeader>
-          <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
+          <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
+            <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
+          </button>
           <FontAwesomeIcon icon={faSquarePlus} className="fa-regular fa-square-plus" />
         </SidebarHeader>
         <SidebarChats>
@@ -272,6 +280,12 @@ export default function Home() {
       <ChatContainer>
         <ChatHeader>
           <div className="box-left">
+            {!isOpen && (
+              <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
+                <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
+              </button>
+            )}
+
             <div className="notify-icon">
               <FontAwesomeIcon icon={faBell} className="fa-regular fa-bell" />
             </div>
