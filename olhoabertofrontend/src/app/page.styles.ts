@@ -18,16 +18,28 @@ height: 100vh;
     color: var(--text-hover-color);
 }
 
-`
-export const Sidebar = styled.div`
 
-display: flex;
-flex-direction: column;
-width: 350px;
-height: 100vh;
-background-color: var(--bg-sidebar-color);
-padding: 25px 35px;
 `
+
+
+interface SidebarProps {
+  isOpen: boolean;
+}
+
+
+
+export const Sidebar = styled.div<SidebarProps>`
+  display: flex;
+  flex-direction: column;
+  width: ${props => (props.isOpen ? '350px' : '0px')};
+  height: 100vh;
+  background-color: var(--bg-sidebar-color);
+  padding: ${props => (props.isOpen ? '25px 35px' : '0px')}; 
+  overflow-x: hidden; 
+  transition: width 0.3s ease-in, padding 0.3s ease-in, opacity 0.3s ease-in;
+  opacity: ${props => (props.isOpen ? '1' : '0')};
+`;
+
 export const SidebarHeader = styled.div`
 
 display: flex;
@@ -35,6 +47,11 @@ justify-content: space-between;
 align-items: center;
 padding-bottom: 15px;
 font-size: 25px;
+
+.mode-open-close {
+    all: unset;
+    margin-right: 20px;
+}
 
 `
 export const SidebarChats = styled.div`
@@ -106,6 +123,11 @@ font-size: 25px;
         all: unset;
         margin-right: 20px;
     }
+}
+
+.mode-open-close {
+    all: unset;
+    margin-right: 20px;
 }
 
 `
@@ -288,6 +310,7 @@ li  {
 
         .fa-regular, .fa-solid {
             padding-right: 5px  ;
+            background: red;
         }
 
         &.active, &:hover {

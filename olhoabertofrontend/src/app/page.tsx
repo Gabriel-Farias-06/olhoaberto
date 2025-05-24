@@ -74,6 +74,12 @@ export default function Home() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const userIconRef = useRef<HTMLDivElement>(null);
 
+  const [isOpen, setIsOpen] = useState(true);
+  
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
+
   const toggleUserMenu = () => setShowUserMenu((prev) => !prev);
   const openModal = (tab: string) => {
     setActiveTab(tab);
@@ -199,9 +205,11 @@ export default function Home() {
   return (
     <AppContainer>
 
-      <Sidebar>
+      <Sidebar isOpen={isOpen}>
         <SidebarHeader>
-          <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
+          <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
+            <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars"/>
+          </button>
           <FontAwesomeIcon icon={faSquarePlus} className="fa-regular fa-square-plus" />
         </SidebarHeader>
         <SidebarChats>
@@ -221,13 +229,19 @@ export default function Home() {
           </div>
         </SidebarChats>
         <SidebarFooter>
-          <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" />
+          {/* <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" /> */}
           <p>Sair</p>
         </SidebarFooter>
       </Sidebar>
 
       <ChatContainer>
         <ChatHeader>
+          {!isOpen && (
+            <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
+            <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
+            </button>
+          )}
+
           <div className="box-left">
             <div className="notify-icon">
               <FontAwesomeIcon icon={faBell} className="fa-regular fa-bell" />
