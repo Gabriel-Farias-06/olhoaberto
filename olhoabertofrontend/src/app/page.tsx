@@ -243,7 +243,7 @@ export default function Home() {
   return (
     <AppContainer>
 
-      <Sidebar isOpen={isOpen}>
+      <Sidebar $isOpen={isOpen}>
         <SidebarHeader>
           <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
             <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
@@ -394,14 +394,49 @@ export default function Home() {
 
             <ModalTabContent>
               <div className={`tab-content ${activeTab !== "alert" ? "hidden" : ""}`} id="alert">
-                criar alerta
+                <div className="alert-header">
+                  <h2>Criar Alerta</h2>
+                </div>
+
+                <form id="alert-create-form" className="alert-section">
+                  <label htmlFor="alertName" className="alert-label">Digite o nome do alerta</label>
+                  <input
+                    type="text"
+                    className="alert-input"
+                    name="alertName"
+                    id="alertName"
+                    placeholder="Nome do alerta..."
+                    required
+                  />
+
+                  <label htmlFor="alertDescription" className="alert-label">Descreva como o alerta deve agir</label>
+                  <textarea
+                    className="alert-input"
+                    name="alertDescription"
+                    id="alertDescription"
+                    placeholder="Descreva como o alerta deve agir..."
+                    rows={4}
+                    required
+                  ></textarea>
+
+                  <div className="alert-buttons">
+                    <button type="button" className="alert-button cancel">Cancelar</button>
+                    <button type="submit" className="alert-button create">Criar</button>
+                  </div>
+
+                  <footer className="alert-footer">
+                    <div className="alert-alert"></div>
+                  </footer>
+                </form>
               </div>
+
+
               <div className={`tab-content ${activeTab !== "profile" ? "hidden" : ""}`} id="profile">
                 <div className="profile-header">
                   <h2>Configurações do perfil</h2>
                 </div>
 
-                <div className="profile-section">
+                <form id="profile-config-form" className="profile-section">
                   <label htmlFor="newusername" className="profile-label">Digite como o chat deve te chamar</label>
                   <input type="text" className="profile-input" name="newusername" id="username" placeholder="Digite como o chat deve te chamar..." />
 
@@ -436,12 +471,77 @@ export default function Home() {
                     </div>
                   </footer>
 
-                </div>
+                </form>
 
               </div>
+
               <div className={`tab-content ${activeTab !== "admin" ? "hidden" : ""}`} id="admin">
-                admin só admin
+                <div className="admin-header">
+                  <h2>Configurações do Modelo</h2>
+                </div>
+
+                <form id="admin-config-form" className="admin-section">
+                  <label htmlFor="max_output_tokens" className="admin-label">Número máximo de tokens</label>
+                  <input
+                    type="number"
+                    className="admin-input"
+                    name="max_output_tokens"
+                    id="max_output_tokens"
+                    placeholder="Ex: 2048"
+                    min="1"
+                    max="2048"
+                    required
+                  />
+
+                  <label htmlFor="temperature" className="admin-label">Temperatura (criatividade/aleatoriedade)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="1"
+                    className="admin-input"
+                    name="temperature"
+                    id="temperature"
+                    placeholder="Ex: 0.4"
+                    required
+                  />
+
+                  <label htmlFor="top_p" className="admin-label">Top P (nucleus sampling)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="1"
+                    className="admin-input"
+                    name="top_p"
+                    id="top_p"
+                    placeholder="Ex: 1"
+                    required
+                  />
+
+                  <label htmlFor="top_k" className="admin-label">Top K</label>
+                  <input
+                    type="number"
+                    className="admin-input"
+                    name="top_k"
+                    id="top_k"
+                    placeholder="Ex: 32"
+                    min="1"
+                    max="100"
+                    required
+                  />
+
+                  <div className="admin-buttons">
+                    <button type="button" className="admin-button cancel">Cancelar</button>
+                    <button type="submit" className="admin-button save">Salvar</button>
+                  </div>
+
+                  <footer className="admin-footer">
+                    <div className="admin-alert"></div>
+                  </footer>
+                </form>
               </div>
+
             </ModalTabContent>
 
           </ModalBody>
