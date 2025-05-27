@@ -18,24 +18,24 @@ height: 100vh;
     color: var(--text-hover-color);
 }
 
-
 `
 
 interface SidebarProps {
-  isOpen: boolean;
+  $isOpen: boolean;
 }
 
 export const Sidebar = styled.div<SidebarProps>`
   display: flex;
   flex-direction: column;
-  width: ${props => (props.isOpen ? '350px' : '0px')};
+  width: ${props => (props.$isOpen ? '350px' : '0px')};
   height: 100vh;
   background-color: var(--bg-sidebar-color);
-  padding: ${props => (props.isOpen ? '25px 35px' : '0px')}; 
+  padding: ${props => (props.$isOpen ? '25px 35px' : '0px')}; 
   overflow-x: hidden; 
   transition: width 0.3s ease-in, padding 0.3s ease-in, opacity 0.3s ease-in;
-  opacity: ${props => (props.isOpen ? '1' : '0')};
+  opacity: ${props => (props.$isOpen ? '1' : '0')};
 `;
+
 
 export const SidebarHeader = styled.div`
 
@@ -339,7 +339,6 @@ li  {
 
         .fa-regular, .fa-solid {
             padding-right: 5px  ;
-            background: red;
         }
 
         &.active, &:hover {
@@ -366,6 +365,96 @@ overflow-y: auto;
     &:not(.hidden) {
         display: block;
     }
+
+
+    &#alert {
+        .alert-header {
+            border-bottom: 2px solid var(--border-login-cadastro-color);
+            padding: 0 10px 10px 10px;
+        }
+
+        .alert-section {
+            display: flex;
+            flex-direction: column;
+            font-size: 13px;
+
+            .alert-label {
+                margin: 20px 0 3px 5px ;
+            }
+
+            .alert-input {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+                border: 1px solid var(--border-button-login-cadastro-color);
+                border-radius: 10px;
+                width: 100%;
+                margin: 5px 0 0 0;
+                padding: 10px 7px;
+                resize: none;
+                font-size: 12px;
+            }
+
+            .alert-input-wrapper {
+                position: relative;
+    
+                .alert-input {
+                    padding-right: 30px;
+                }
+
+                .toggle-password {
+                    position: absolute;
+                    top: 55%;
+                    right: 13px;
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                }
+            }
+
+            .alert-buttons {
+                display: flex;
+                justify-content: flex-end;
+                padding: 15px 7px 0px 7px;
+
+                .alert-button {
+                    margin-left: 7px;
+                    border-radius: 16px;
+                    cursor: pointer;
+                    transition-duration: 0.2s;
+
+                    &.cancel {
+                        background-color: var(--bg-color);
+                        border: 1px solid var(--border-button-login-cadastro-color);
+                        color: var(--text-color);
+                        padding: 5px 7px;
+                    }
+
+                    &.create {
+                        background-color: var(--bg-button-login-cadastro-color);
+                        color: var(--text-second-color);
+                        padding: 5px 13px;
+                    }
+
+                    &:hover {
+                        background-color: var(--text-color);
+                        color: var(--bg-color);
+                    }
+
+                }
+            }
+
+                .alert-footer.active {
+                    background-color: var(--bg-alert-color);
+                    color: var(--text-alert-color);
+                    margin:  0 30px 20px 30px;
+                    padding: 7px;
+                    border-radius: 7px;
+                    display: flex;
+                    align-items: center;
+                }
+
+        }
+    }
+
 
     &#profile {
         .profile-header {
@@ -473,6 +562,93 @@ overflow-y: auto;
             }
 
                 .profile-footer.active {
+                    background-color: var(--bg-alert-color);
+                    color: var(--text-alert-color);
+                    margin:  0 30px 20px 30px;
+                    padding: 7px;
+                    border-radius: 7px;
+                    display: flex;
+                    align-items: center;
+                }
+
+        }
+    }
+
+
+    &#admin {
+        .admin-header {
+            border-bottom: 2px solid var(--border-login-cadastro-color);
+            padding: 0 10px 10px 10px;
+        }
+
+        .admin-section {
+            display: flex;
+            flex-direction: column;
+            font-size: 13px;
+
+            .admin-label {
+                margin: 20px 0 3px 5px ;
+            }
+
+            .admin-input {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+                border: 1px solid var(--border-button-login-cadastro-color);
+                border-radius: 10px;
+                width: 100%;
+                margin: 5px 0 0 0;
+                padding: 10px 7px;
+            }
+
+            .admin-input-wrapper {
+                position: relative;
+    
+                .admin-input {
+                    padding-right: 30px;
+                }
+
+                .toggle-password {
+                    position: absolute;
+                    top: 55%;
+                    right: 13px;
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                }
+            }
+
+            .admin-buttons {
+                display: flex;
+                justify-content: flex-end;
+                padding: 15px 7px 0px 7px;
+
+                .admin-button {
+                    margin-left: 7px;
+                    border-radius: 16px;
+                    cursor: pointer;
+                    transition-duration: 0.2s;
+
+                    &.cancel {
+                        background-color: var(--bg-color);
+                        border: 1px solid var(--border-button-login-cadastro-color);
+                        color: var(--text-color);
+                        padding: 5px 7px;
+                    }
+
+                    &.save {
+                        background-color: var(--bg-button-login-cadastro-color);
+                        color: var(--text-second-color);
+                        padding: 5px 13px;
+                    }
+
+                    &:hover {
+                        background-color: var(--text-color);
+                        color: var(--bg-color);
+                    }
+
+                }
+            }
+
+                .admin-footer.active {
                     background-color: var(--bg-alert-color);
                     color: var(--text-alert-color);
                     margin:  0 30px 20px 30px;
