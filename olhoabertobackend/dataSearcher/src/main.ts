@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import session from "express-session";
 
-// Importação de controladores e função de conexão com o banco de dados
+// Importa os controladores e middlewares do projeto
 import {
   loginController,
   signUpController,
@@ -13,74 +13,73 @@ import {
   deleteUserController,
   updateUserController,
 } from "./controllers";
+// Importa função para conectar ao banco de dados
 import { connectDb } from "./infra/db";
 
-// Carrega variáveis de ambiente do arquivo .env
+// Carrega as variáveis de ambiente
 dotenv.config();
 
-// Conecta ao banco de dados e inicia o servidor após a conexão ser estabelecida
+// Conecta ao banco de dados e inicia o servidor após a conexão
 connectDb().then(async () => {
   const app = express();
+  app.use(express.json()); // Permite o parsing de JSON no body das requisições
 
-  // Middleware para interpretar requisições JSON
-  app.use(express.json());
-
-  // Configuração da sessão (usada para autenticação e persistência de login)
+  // Configuração da sessão do usuário
   app.use(
     session({
-      secret: process.env.SESSION_SECRET as string,
-      resave: false,
-      saveUninitialized: false,
+      secret: process.env.SESSION_SECRET as string, // Chave secreta usada para assinar o cookie
+      resave: false, // Não salva a sessão se ela não for modificada
+      saveUninitialized: false, // Não cria sessões vazias
       cookie: {
-        secure: false, // deve ser true em produção com HTTPS
-        maxAge: 120 * 60 * 1000, // duração de 2 horas
+        secure: false, // Define se o cookie será enviado apenas via HTTPS
+        maxAge: 120 * 60 * 1000, // Duração do cookie (2 horas)
       },
     }),
   );
 
-  // Middleware para permitir CORS (Cross-Origin Resource Sharing)
+  // Middleware para configurar headers de CORS
   app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // Permite requisições desse domínio
     res.header(
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, OPTIONS",
     );
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Credentials", "true"); // Permite envio de cookies
     next();
   });
 
-  // Rota GET para streaming de artigos com base na query do usuário
+  // Rota de streaming de artigos
   app.get("/stream", async (req, res) => {
     const query = req.query.q as string;
     const email = req.query.email as string | undefined;
 
     console.log({ query });
 
-    // Configurações de cabeçalho para streaming
+    // Define os headers para permitir resposta em streaming
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.setHeader("Transfer-Encoding", "chunked");
     res.setHeader("Cache-Control", "no-cache");
 
     try {
-      // Envia dados aos poucos enquanto são processados
+      // Faz o streaming dos dados enquanto eles são recebidos
       for await (const chunk of streamArticles(email, query)) {
         res.write(JSON.stringify(chunk.streamArticles) + "\n");
       }
-      res.end();
+      res.end(); // Finaliza a resposta
     } catch (err) {
       console.error(err);
       res.status(500).end("Error during streaming");
     }
   });
 
-  // Rota POST para cadastro de novos usuários
+  // Rota de cadastro
   app.post("/signup", async (req, res) => {
     const { name, email, password } = req.body;
     signUpController(name, email, password, req, res);
   });
 
-  // Rota POST para login
+  // Rota de login
   app.post("/login", async (req, res) => {
     const { email, password } = req.body || {};
     if (!email || !password) {
@@ -91,14 +90,14 @@ connectDb().then(async () => {
     loginController(email, password, req, res);
   });
 
-  // Rota POST para logout (encerra a sessão)
+  // Rota de logout
   app.post("/logout", async (req, res) => {
     req.session.destroy(() => {
       res.status(200).json({ message: "Logout sucessful" });
     });
   });
 
-  // Rota PUT para atualização de nome de usuário (requer autenticação)
+  // Rota para atualizar dados do usuário (requer autenticação)
   app.put(
     "/updateUser",
     authenticatedMiddlewareController,
@@ -112,7 +111,7 @@ connectDb().then(async () => {
     },
   );
 
-  // Rota DELETE para exclusão de usuário (requer autenticação)
+  // Rota para deletar o usuário (requer autenticação)
   app.delete(
     "/deleteUser",
     authenticatedMiddlewareController,
@@ -127,13 +126,13 @@ connectDb().then(async () => {
     },
   );
 
-  // Rota PUT para atualizar instruções personalizadas do usuário (requer autenticação)
+  // Rota para atualizar instruções do usuário (requer autenticação)
   app.put(
     "/instructions",
     authenticatedMiddlewareController,
     async (req, res) => {
       const { instructions } = req.body;
-      const { email } = req.session.user!;
+      const { email } = req.session.user!; // Obtém email do usuário logado
       updateInstructions(email, instructions, res);
     },
   );
