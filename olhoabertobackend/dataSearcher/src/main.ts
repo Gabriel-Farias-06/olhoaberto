@@ -10,6 +10,7 @@ import {
   authenticatedMiddlewareController,
   deleteUserController,
   updateUserController,
+  addConversation,
 } from "./controllers";
 import { connectDb } from "./infra/db";
 
@@ -45,15 +46,18 @@ connectDb().then(async () => {
   app.get("/stream", async (req, res) => {
     const query = req.query.q as string;
     const email = req.query.email as string | undefined;
+    const idConversation = req.query.idConversation as string | undefined;
 
-    console.log({ query });
+    console.log(query);
+    console.log(email);
+    console.log(idConversation);
 
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.setHeader("Transfer-Encoding", "chunked");
     res.setHeader("Cache-Control", "no-cache");
 
     try {
-      for await (const chunk of streamArticles(email, query)) {
+      for await (const chunk of streamArticles(email, query, idConversation)) {
         res.write(JSON.stringify(chunk.streamArticles) + "\n");
       }
       res.end();
@@ -63,13 +67,25 @@ connectDb().then(async () => {
     }
   });
 
-  app.post("/signup", async (req, res) => {
+  app.post(
+    "/conversations/:userId",
+    authenticatedMiddlewareController,
+    (req, res) => {
+      const { userId } = req.params || {};
+      if (!userId) {
+        res.status(400).json({ message: "The userId is required" });
+      }
+      addConversation(req, res, userId);
+    },
+  );
+
+  app.post("/signup", (req, res) => {
     const { name, email, password } = req.body;
 
     signUpController(name, email, password, req, res);
   });
 
-  app.post("/login", async (req, res) => {
+  app.post("/login", (req, res) => {
     const { email, password } = req.body || {};
     if (!email || !password) {
       res.status(400).json("Email and password are obrigatories");
@@ -79,48 +95,41 @@ connectDb().then(async () => {
     loginController(email, password, req, res);
   });
 
-  app.post("/logout", async (req, res) => {
+  app.post("/logout", (req, res) => {
     req.session.destroy(() => {
       res.status(200).json({ message: "Logout sucessful" });
     });
   });
 
-  app.put(
-    "/updateUser",
-    authenticatedMiddlewareController,
-    async (req, res) => {
-      const { password, newName } = req.body || {};
-      if (!password || !newName) {
-        res.status(400).json({ message: "Password and new name are required" });
-        return;
-      }
-      updateUserController(req, res);
-    },
-  );
+  app.put("/updateUser", authenticatedMiddlewareController, (req, res) => {
+    const { actualPassword } = req.body || {};
+    const { newPassword } = req.body || {};
+    const { newName } = req.body || {};
 
-  app.delete(
-    "/deleteUser",
-    authenticatedMiddlewareController,
-    async (req, res) => {
-      const { password } = req.body || {};
-      if (!password) {
-        res.status(400).json({ message: "Password is required" });
-        return;
-      }
+    if (!actualPassword || (!newPassword && !newName)) {
+      res
+        .status(400)
+        .json({ message: "Password and new informations are required" });
+      return;
+    }
+    updateUserController(req, res);
+  });
 
-      deleteUserController(req, res);
-    },
-  );
+  app.delete("/deleteUser", authenticatedMiddlewareController, (req, res) => {
+    const { password } = req.body || {};
+    if (!password) {
+      res.status(400).json({ message: "Password is required" });
+      return;
+    }
 
-  app.put(
-    "/instructions",
-    authenticatedMiddlewareController,
-    async (req, res) => {
-      const { instructions } = req.body;
-      const { email } = req.session.user!;
-      updateInstructions(email, instructions, res);
-    },
-  );
+    deleteUserController(req, res);
+  });
+
+  app.put("/instructions", authenticatedMiddlewareController, (req, res) => {
+    const { instructions } = req.body;
+    const { email } = req.session.user!;
+    updateInstructions(email, instructions, res);
+  });
 
   app.listen(4000, () => {
     console.info("Server is running on http://localhost:4000");

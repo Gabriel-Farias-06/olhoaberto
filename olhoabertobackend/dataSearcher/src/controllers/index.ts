@@ -5,3 +5,4 @@ export { default as updateInstructions } from "./updateInstructions";
 export { default as authenticatedMiddlewareController } from "./authenticatedMiddlewareController";
 export { default as deleteUserController } from "./deleteUserController";
 export { default as updateUserController } from "./updateUserController";
+export { default as addConversation } from "./addConversation";
