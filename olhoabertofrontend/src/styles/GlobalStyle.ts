@@ -26,6 +26,8 @@ const GlobalStyle = createGlobalStyle`
       --text-alert-sucess-color: #155724;
       --bg-alert-error-color: #f8d7da;
       --text-alert-error-color: #721c24;
+      --bg-profile-user-delet: #fc5b5b;
+      --bg-profile-user-delet-hover: #fc1e1e;
   }
 
   :root.light {

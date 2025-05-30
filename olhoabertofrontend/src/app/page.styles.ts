@@ -549,7 +549,7 @@ overflow-y: auto;
 
                     &.save {
                         background-color: var(--bg-button-login-cadastro-color);
-                        color: var(--text-second-color);
+                        color: var(--bg-color);
                         padding: 5px 13px;
                     }
 
@@ -570,8 +570,33 @@ overflow-y: auto;
                     display: flex;
                     align-items: center;
                 }
+        }
+
+        .profile-delet {
+            display: flex;
+            justify-content: space-between;
+            border-top: 2px solid var(--border-login-cadastro-color);
+            margin: 30px 0;
+            padding-top: 20px;
+
+            .profile-button-delet {
+                background-color: var(--bg-profile-user-delet);
+                color: white;
+                font-weight: bold;
+                margin-left: 7px;
+                padding: 0 7px;
+                border-radius: 16px;
+                cursor: pointer;
+                transition-duration: 0.2s;
+
+                &:hover {
+                    background-color: var(--bg-profile-user-delet-hover);
+                }
+            }
+
 
         }
+
     }
 
 

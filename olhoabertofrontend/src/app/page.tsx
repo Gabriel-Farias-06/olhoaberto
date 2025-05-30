@@ -9,7 +9,8 @@ import {
   faUserGear,
   faXmark,
   faEye,
-  faEyeSlash
+  faEyeSlash,
+  faBell as faBellSolid
 } from '@fortawesome/free-solid-svg-icons';
 import {
   faSquarePlus,
@@ -300,7 +301,7 @@ export default function Home() {
               <UserMenu ref={userMenuRef} className={showUserMenu ? "user-menu" : "hidden"}>
                 <li className="item alert">
                   <button className="open-modal-btn" onClick={() => openModal("alert")}>
-                    <FontAwesomeIcon icon={faBell} className="fa-regular fa-bell" /> Configurar Alertas
+                    <FontAwesomeIcon icon={faBellSolid} className="fa-regular fa-bell" /> Configurar Alertas
                   </button>
                 </li>
                 <li className="item profile">
@@ -376,7 +377,7 @@ export default function Home() {
               <ul>
                 <li>
                   <button className={activeTab === "alert" ? "active" : ""} onClick={() => setActiveTab("alert")} >
-                    <FontAwesomeIcon icon={faBell} className="fa-regular fa-bell" /> Alertas
+                    <FontAwesomeIcon icon={faBellSolid} className="fa-regular fa-bell" /> Alertas
                   </button>
                 </li>
                 <li>
@@ -472,6 +473,11 @@ export default function Home() {
                   </footer>
 
                 </form>
+
+                <div className="profile-delet">
+                  <h2>Deletar sua conta</h2>
+                  <button type="submit" className="profile-button-delet">Excluir Conta</button>
+                </div>
 
               </div>
 
