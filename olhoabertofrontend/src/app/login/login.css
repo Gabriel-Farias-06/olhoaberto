@@ -1,3 +1,11 @@
+.login-input:-webkit-autofill,
+.login-input:-webkit-autofill:focus,
+.login-input:-webkit-autofill:hover {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-color) inset;
+  -webkit-text-fill-color: var(--text-color);
+}
+
+
 .login-page {
     background-color: var(--bg-login-cadastro-color);
     color: var(--text-color);
@@ -94,15 +102,32 @@
     padding: 5px 13px;
 }
 
-.login-footer.active {
-    background-color: var(--bg-alert-color);
-    color: var(--text-alert-color);
+
+.login-alert {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.login-alert.succes {
+    background-color: var(--bg-alert-sucess-color);
+    color: var(--text-alert-sucess-color);
     margin:  0 30px 20px 30px;
     padding: 7px;
     border-radius: 7px;
-    display: flex;
-    align-items: center;
 }
+
+.login-alert.error {
+    background-color: var(--bg-alert-error-color);
+    color: var(--text-alert-error-color);
+    margin:  0 30px 20px 30px;
+    padding: 7px;
+    border-radius: 7px;
+}
+
 
 .login-button:hover {
     background-color: var(--text-color);

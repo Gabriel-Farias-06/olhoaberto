@@ -1,109 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { Navbar, Sidebar } from "./@components";
-// import * as S from "./page.styles";
-// import { marked } from "marked";
-// import { Accordion, AccordionItem } from "@heroui/accordion";
-
-// type QuerySources = {
-//   pdfPage: string;
-//   path: string;
-//   date: string;
-// };
-
-// type QueryAnswer = {
-//   answer: string;
-//   sources: QuerySources[];
-// };
-
-// export default function Home() {
-//   const [query, setQuery] = useState("");
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [answer, setAnswer] = useState<QueryAnswer>();
-
-//   const submitQuery = async () => {
-//     setIsLoading(true);
-//     const res = await fetch(`http://localhost:4000/stream?q=${query}`);
-//     const reader = res.body?.getReader();
-//     const decoder = new TextDecoder("utf-8");
-//     let buffer = "";
-
-//     while (true) {
-//       if (reader) {
-//         const { done, value } = await reader?.read();
-
-//         if (done) break;
-//         buffer += decoder.decode(value, { stream: true });
-
-//         const lines = buffer.split("\n");
-//         buffer = lines.pop() || "";
-
-//         setIsLoading(false);
-//         for (const line of lines) {
-//           if (!line.trim()) continue;
-//           const data = JSON.parse(line) as QueryAnswer;
-//           setAnswer({
-//             answer: await marked(data.answer),
-//             sources: data.sources,
-//           });
-//         }
-//       }
-//     }
-//   };
-
-//   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     setQuery(e.currentTarget.value);
-//   };
-
-//   useEffect(() => {
-//     console.log(answer);
-//   }, [answer]);
-
-//   return (
-//     <S.Container>
-//       <Sidebar />
-//       <S.Chat>
-//         <Navbar />
-//         <div className="messages">
-//           <div className="answer">
-//             {answer && (
-//               <div>
-//                 <div dangerouslySetInnerHTML={{ __html: answer?.answer }}></div>
-//                 <Accordion variant="shadow">
-//                   <ul>
-//                     {answer.sources.map(({ date, path, pdfPage }) => (
-//                       <AccordionItem
-//                         key="1"
-//                         aria-label="Accordion 1"
-//                         title="Accordion 1"
-//                       >
-//                         <li>{date}</li>
-//                         <li>{path}</li>
-//                         <li>{pdfPage}</li>
-//                       </AccordionItem>
-//                     ))}
-//                   </ul>
-//                 </Accordion>
-//               </div>
-//             )}
-//           </div>
-
-//           <div className="input-box">
-//             <input type="text" className="input" onChange={handleInputChange} />
-//             <button onClick={() => submitQuery()}>
-//               {isLoading ? "Carregando..." : "Enviar"}
-//             </button>
-//           </div>
-//         </div>
-//       </S.Chat>
-//     </S.Container>
-//   );
-// }
-
-
-// Versão Miguel
-
 "use client";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -115,7 +9,8 @@ import {
   faUserGear,
   faXmark,
   faEye,
-  faEyeSlash
+  faEyeSlash,
+  faBell as faBellSolid
 } from '@fortawesome/free-solid-svg-icons';
 import {
   faSquarePlus,
@@ -146,6 +41,8 @@ import {
 import { marked } from "marked";
 import { Accordion, AccordionItem } from "@heroui/accordion";
 import { mark, script } from 'framer-motion/client';
+import { useRouter } from 'next/navigation';
+import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 
 type QuerySources = {
   pdfPage: string;
@@ -165,6 +62,9 @@ type Message = {
 
 
 export default function Home() {
+  const router = useRouter();
+  const [userName, setUserName] = useState<string | null>(null)
+
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [answer, setAnswer] = useState<QueryAnswer>();
@@ -176,17 +76,26 @@ export default function Home() {
   const [isLightMode, setIsLightMode] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const userIconRef = useRef<HTMLDivElement>(null);
 
+  const toggleTheme = () => setIsLightMode((prev) => !prev);
   const toggleUserMenu = () => setShowUserMenu((prev) => !prev);
+
   const openModal = (tab: string) => {
     setActiveTab(tab);
     setShowModal(true);
   };
 
-  const toggleTheme = () => setIsLightMode((prev) => !prev);
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.currentTarget.value);
+  };
 
   const submitQuery = async () => {
     if (!query.trim()) return;
@@ -199,9 +108,6 @@ export default function Home() {
 
       const res = await fetch(`http://localhost:4000/stream?q=${query}`);
 
-      // const text = await res.text();
-      // console.log("Resposta completa do backend:", text);
-      
       const reader = res.body?.getReader();
       const decoder = new TextDecoder("utf-8");
 
@@ -228,8 +134,8 @@ export default function Home() {
           try {
             const { answer, sources: partialSources } = JSON.parse(line);
             responseText = answer;
-            
-            if(Array.isArray(partialSources)) {
+
+            if (Array.isArray(partialSources)) {
               sources = partialSources;
             }
           } catch (err) {
@@ -265,11 +171,24 @@ export default function Home() {
     }
   };
 
-   
+  async function handleLogout() {
+    try {
+      const res = await fetch("http://localhost:4000/logout", {
+        method: "POST",
+        credentials: "include",
+      });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.currentTarget.value);
-  };
+      if (res.ok) {
+        router.push("/login")
+      } else {
+        const data = await res.json();
+        alert("Erro ao sair: " + data.message)
+      }
+    } catch (error) {
+      console.error("Erro no logout:", error);
+      alert("Erro inesperado ao tentar sair.")
+    }
+  }
 
   useEffect(() => {
     console.log(answer);
@@ -304,16 +223,38 @@ export default function Home() {
     }
   }, [])
 
+  useEffect(() => {
+    async function checkAuth() {
+      const res = await fetch("http://localhost:4000/me", {
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      console.log('Status da resposta:', data);
+
+      if (!res.ok) {
+        router.push("/login");
+      } else {
+        setUserName(data.user?.name || null)
+      }
+    }
+    checkAuth();
+  }, [router]);
 
   return (
     <AppContainer>
 
-      <Sidebar>
+      <Sidebar $isOpen={isOpen}>
         <SidebarHeader>
-          <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
+          <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
+            <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
+          </button>
           <FontAwesomeIcon icon={faSquarePlus} className="fa-regular fa-square-plus" />
         </SidebarHeader>
         <SidebarChats>
+          <div className="name-user">
+            {userName ? `Olá, ${userName}` : "Carregando..."}
+          </div>
           <div className="chat-group">
             <p>Hoje</p>
             <ul className="conversation-list">
@@ -330,14 +271,22 @@ export default function Home() {
           </div>
         </SidebarChats>
         <SidebarFooter>
-          <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" />
-          <p>Sair</p>
+          <button className="sidebar-footer-btn" onClick={handleLogout}>
+            <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" />
+            <p>Sair</p>
+          </button>
         </SidebarFooter>
       </Sidebar>
 
       <ChatContainer>
         <ChatHeader>
           <div className="box-left">
+            {!isOpen && (
+              <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
+                <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
+              </button>
+            )}
+
             <div className="notify-icon">
               <FontAwesomeIcon icon={faBell} className="fa-regular fa-bell" />
             </div>
@@ -352,7 +301,7 @@ export default function Home() {
               <UserMenu ref={userMenuRef} className={showUserMenu ? "user-menu" : "hidden"}>
                 <li className="item alert">
                   <button className="open-modal-btn" onClick={() => openModal("alert")}>
-                    <FontAwesomeIcon icon={faBell} className="fa-regular fa-bell" /> Configurar Alertas
+                    <FontAwesomeIcon icon={faBellSolid} className="fa-regular fa-bell" /> Configurar Alertas
                   </button>
                 </li>
                 <li className="item profile">
@@ -366,7 +315,7 @@ export default function Home() {
                   </button>
                 </li>
                 <li className="item logout">
-                  <button className="open-modal-btn" data-tab="logout">
+                  <button className="open-modal-btn" data-tab="logout" onClick={handleLogout}>
                     <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" /> Sair
                   </button>
                 </li>
@@ -377,7 +326,7 @@ export default function Home() {
 
         <ChatMessages>
           <div className="message user">Quanto o governo investiu em educação?</div>
-          <div className="message bot">Em 2025, foi investido quantos reais bilhões em educação?</div>
+          <div className="message bot">Em 2025, foi investido quantos reais em educação?</div>
 
           {messages.map((msg, index) => (
             <div key={index} className={`message ${msg.sender}`}
@@ -428,7 +377,7 @@ export default function Home() {
               <ul>
                 <li>
                   <button className={activeTab === "alert" ? "active" : ""} onClick={() => setActiveTab("alert")} >
-                    <FontAwesomeIcon icon={faBell} className="fa-regular fa-bell" /> Alertas
+                    <FontAwesomeIcon icon={faBellSolid} className="fa-regular fa-bell" /> Alertas
                   </button>
                 </li>
                 <li>
@@ -446,14 +395,49 @@ export default function Home() {
 
             <ModalTabContent>
               <div className={`tab-content ${activeTab !== "alert" ? "hidden" : ""}`} id="alert">
-                criar alerta
+                <div className="alert-header">
+                  <h2>Criar Alerta</h2>
+                </div>
+
+                <form id="alert-create-form" className="alert-section">
+                  <label htmlFor="alertName" className="alert-label">Digite o nome do alerta</label>
+                  <input
+                    type="text"
+                    className="alert-input"
+                    name="alertName"
+                    id="alertName"
+                    placeholder="Nome do alerta..."
+                    required
+                  />
+
+                  <label htmlFor="alertDescription" className="alert-label">Descreva como o alerta deve agir</label>
+                  <textarea
+                    className="alert-input"
+                    name="alertDescription"
+                    id="alertDescription"
+                    placeholder="Descreva como o alerta deve agir..."
+                    rows={4}
+                    required
+                  ></textarea>
+
+                  <div className="alert-buttons">
+                    <button type="button" className="alert-button cancel">Cancelar</button>
+                    <button type="submit" className="alert-button create">Criar</button>
+                  </div>
+
+                  <footer className="alert-footer">
+                    <div className="alert-alert"></div>
+                  </footer>
+                </form>
               </div>
+
+
               <div className={`tab-content ${activeTab !== "profile" ? "hidden" : ""}`} id="profile">
                 <div className="profile-header">
                   <h2>Configurações do perfil</h2>
                 </div>
 
-                <div className="profile-section">
+                <form id="profile-config-form" className="profile-section">
                   <label htmlFor="newusername" className="profile-label">Digite como o chat deve te chamar</label>
                   <input type="text" className="profile-input" name="newusername" id="username" placeholder="Digite como o chat deve te chamar..." />
 
@@ -488,12 +472,82 @@ export default function Home() {
                     </div>
                   </footer>
 
+                </form>
+
+                <div className="profile-delet">
+                  <h2>Deletar sua conta</h2>
+                  <button type="submit" className="profile-button-delet">Excluir Conta</button>
                 </div>
 
               </div>
+
               <div className={`tab-content ${activeTab !== "admin" ? "hidden" : ""}`} id="admin">
-                admin só admin
+                <div className="admin-header">
+                  <h2>Configurações do Modelo</h2>
+                </div>
+
+                <form id="admin-config-form" className="admin-section">
+                  <label htmlFor="max_output_tokens" className="admin-label">Número máximo de tokens</label>
+                  <input
+                    type="number"
+                    className="admin-input"
+                    name="max_output_tokens"
+                    id="max_output_tokens"
+                    placeholder="Ex: 2048"
+                    min="1"
+                    max="2048"
+                    required
+                  />
+
+                  <label htmlFor="temperature" className="admin-label">Temperatura (criatividade/aleatoriedade)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="1"
+                    className="admin-input"
+                    name="temperature"
+                    id="temperature"
+                    placeholder="Ex: 0.4"
+                    required
+                  />
+
+                  <label htmlFor="top_p" className="admin-label">Top P (nucleus sampling)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="1"
+                    className="admin-input"
+                    name="top_p"
+                    id="top_p"
+                    placeholder="Ex: 1"
+                    required
+                  />
+
+                  <label htmlFor="top_k" className="admin-label">Top K</label>
+                  <input
+                    type="number"
+                    className="admin-input"
+                    name="top_k"
+                    id="top_k"
+                    placeholder="Ex: 32"
+                    min="1"
+                    max="100"
+                    required
+                  />
+
+                  <div className="admin-buttons">
+                    <button type="button" className="admin-button cancel">Cancelar</button>
+                    <button type="submit" className="admin-button save">Salvar</button>
+                  </div>
+
+                  <footer className="admin-footer">
+                    <div className="admin-alert"></div>
+                  </footer>
+                </form>
               </div>
+
             </ModalTabContent>
 
           </ModalBody>

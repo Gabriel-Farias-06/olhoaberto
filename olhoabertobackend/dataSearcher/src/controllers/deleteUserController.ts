@@ -18,4 +18,5 @@ export default async (req: Request, res: Response) => {
   req.session.destroy(() => {
     res.status(200).json({ message: "Account deleted sucessful" });
   });
+  
 };

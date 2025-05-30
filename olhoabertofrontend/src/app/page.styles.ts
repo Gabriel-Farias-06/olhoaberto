@@ -1,34 +1,3 @@
-// import styled from "styled-components";
-
-// export const Container = styled.div`
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
-//   width: 100vw;
-//   height: 100vh;
-// `;
-
-// export const Chat = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   width: 100%;
-//   height: 100%;
-
-//   .messages {
-//     display: flex;
-//     justify-content: space-between;
-//     align-items: center;
-//     flex-direction: column;
-//     padding: 1rem;
-//     width: 100%;
-//     height: 92%;
-//   }
-
-//   .answer {
-//     height: 90%;
-//     overflow-y: scroll;
-//   }
-// `;
 
 import styled from "styled-components";
 
@@ -50,15 +19,24 @@ height: 100vh;
 }
 
 `
-export const Sidebar = styled.div`
 
-display: flex;
-flex-direction: column;
-width: 350px;
-height: 100vh;
-background-color: var(--bg-sidebar-color);
-padding: 25px 35px;
-`
+interface SidebarProps {
+  $isOpen: boolean;
+}
+
+export const Sidebar = styled.div<SidebarProps>`
+  display: flex;
+  flex-direction: column;
+  width: ${props => (props.$isOpen ? '350px' : '0px')};
+  height: 100vh;
+  background-color: var(--bg-sidebar-color);
+  padding: ${props => (props.$isOpen ? '25px 35px' : '0px')}; 
+  overflow-x: hidden; 
+  transition: width 0.3s ease-in, padding 0.3s ease-in, opacity 0.3s ease-in;
+  opacity: ${props => (props.$isOpen ? '1' : '0')};
+`;
+
+
 export const SidebarHeader = styled.div`
 
 display: flex;
@@ -67,10 +45,21 @@ align-items: center;
 padding-bottom: 15px;
 font-size: 25px;
 
+.mode-open-close {
+    all: unset;
+    margin-right: 20px;
+}
+
 `
 export const SidebarChats = styled.div`
 padding: 15px 0px;
 overflow-y: auto;
+
+.name-user {
+    padding: 0px 5px;
+    font-size: 20px;
+    font-weight: bold;
+}
 
 .chat-group {
     padding: 15px 5px 7px 5px;
@@ -98,21 +87,38 @@ overflow-y: auto;
 
 `
 export const SidebarFooter = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 20px;
+  font-size: 17px;
+  font-weight: bold;
 
-display: flex;
-flex-direction: row;
-align-items: center;
-margin-top: auto;
-padding-top: 20px;
-font-size: 17px;
-font-weight: bold;
+  .sidebar-footer-btn {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color);
+    font: inherit;
+    padding: 0;
+    transition: color 0.1s ease;
 
-.fa-right-from-bracket {
-    font-size: 15px;
-    padding-right: 5px;
-}
+    &:hover {
+      color: var(--text-hover-color);
+    }
 
+    .fa-right-from-bracket {
+      font-size: 15px;
+      padding-right: 5px;
+      color: inherit; /* para herdar a cor do botão */
+    }
+  }
 `
+
+
 export const ChatContainer = styled.div`
 
 flex: 1;
@@ -125,9 +131,23 @@ export const ChatHeader = styled.div`
 display: flex;
 justify-content: space-between;
 align-items: center;
-padding: 25px 15px;
+padding: 25px 20px;
 background: var(--bg-color);
 font-size: 25px;
+
+.box-left {
+    display: flex;
+    flex-direction: row;
+
+    .mode-open-close {
+        all: unset;
+        margin-right: 20px;
+    }
+
+    .notify-icon {
+        transition: transform 0.3s ease, color 0.3s ease, opacity 0.3s ease;
+    }
+}
 
 .box-right {
     display: flex;
@@ -176,7 +196,7 @@ background: var(--bg-color);
 
 input {
     flex: 1;
-    padding: 10px;
+    padding: 10px 15px;
     border-radius: 15px 0 0 15px;
     background-color: var(--bg-input-and-button-color);
     color: var(--text-color);
@@ -346,6 +366,96 @@ overflow-y: auto;
         display: block;
     }
 
+
+    &#alert {
+        .alert-header {
+            border-bottom: 2px solid var(--border-login-cadastro-color);
+            padding: 0 10px 10px 10px;
+        }
+
+        .alert-section {
+            display: flex;
+            flex-direction: column;
+            font-size: 13px;
+
+            .alert-label {
+                margin: 20px 0 3px 5px ;
+            }
+
+            .alert-input {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+                border: 1px solid var(--border-button-login-cadastro-color);
+                border-radius: 10px;
+                width: 100%;
+                margin: 5px 0 0 0;
+                padding: 10px 7px;
+                resize: none;
+                font-size: 12px;
+            }
+
+            .alert-input-wrapper {
+                position: relative;
+    
+                .alert-input {
+                    padding-right: 30px;
+                }
+
+                .toggle-password {
+                    position: absolute;
+                    top: 55%;
+                    right: 13px;
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                }
+            }
+
+            .alert-buttons {
+                display: flex;
+                justify-content: flex-end;
+                padding: 15px 7px 0px 7px;
+
+                .alert-button {
+                    margin-left: 7px;
+                    border-radius: 16px;
+                    cursor: pointer;
+                    transition-duration: 0.2s;
+
+                    &.cancel {
+                        background-color: var(--bg-color);
+                        border: 1px solid var(--border-button-login-cadastro-color);
+                        color: var(--text-color);
+                        padding: 5px 7px;
+                    }
+
+                    &.create {
+                        background-color: var(--bg-button-login-cadastro-color);
+                        color: var(--text-second-color);
+                        padding: 5px 13px;
+                    }
+
+                    &:hover {
+                        background-color: var(--text-color);
+                        color: var(--bg-color);
+                    }
+
+                }
+            }
+
+                .alert-footer.active {
+                    background-color: var(--bg-alert-color);
+                    color: var(--text-alert-color);
+                    margin:  0 30px 20px 30px;
+                    padding: 7px;
+                    border-radius: 7px;
+                    display: flex;
+                    align-items: center;
+                }
+
+        }
+    }
+
+
     &#profile {
         .profile-header {
             border-bottom: 2px solid var(--border-login-cadastro-color);
@@ -439,7 +549,7 @@ overflow-y: auto;
 
                     &.save {
                         background-color: var(--bg-button-login-cadastro-color);
-                        color: var(--text-second-color);
+                        color: var(--bg-color);
                         padding: 5px 13px;
                     }
 
@@ -460,6 +570,118 @@ overflow-y: auto;
                     display: flex;
                     align-items: center;
                 }
+        }
+
+        .profile-delet {
+            display: flex;
+            justify-content: space-between;
+            border-top: 2px solid var(--border-login-cadastro-color);
+            margin: 30px 0;
+            padding-top: 20px;
+
+            .profile-button-delet {
+                background-color: var(--bg-profile-user-delet);
+                color: white;
+                font-weight: bold;
+                margin-left: 7px;
+                padding: 0 7px;
+                border-radius: 16px;
+                cursor: pointer;
+                transition-duration: 0.2s;
+
+                &:hover {
+                    background-color: var(--bg-profile-user-delet-hover);
+                }
+            }
+
+
+        }
+
+    }
+
+
+    &#admin {
+        .admin-header {
+            border-bottom: 2px solid var(--border-login-cadastro-color);
+            padding: 0 10px 10px 10px;
+        }
+
+        .admin-section {
+            display: flex;
+            flex-direction: column;
+            font-size: 13px;
+
+            .admin-label {
+                margin: 20px 0 3px 5px ;
+            }
+
+            .admin-input {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+                border: 1px solid var(--border-button-login-cadastro-color);
+                border-radius: 10px;
+                width: 100%;
+                margin: 5px 0 0 0;
+                padding: 10px 7px;
+            }
+
+            .admin-input-wrapper {
+                position: relative;
+    
+                .admin-input {
+                    padding-right: 30px;
+                }
+
+                .toggle-password {
+                    position: absolute;
+                    top: 55%;
+                    right: 13px;
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                }
+            }
+
+            .admin-buttons {
+                display: flex;
+                justify-content: flex-end;
+                padding: 15px 7px 0px 7px;
+
+                .admin-button {
+                    margin-left: 7px;
+                    border-radius: 16px;
+                    cursor: pointer;
+                    transition-duration: 0.2s;
+
+                    &.cancel {
+                        background-color: var(--bg-color);
+                        border: 1px solid var(--border-button-login-cadastro-color);
+                        color: var(--text-color);
+                        padding: 5px 7px;
+                    }
+
+                    &.save {
+                        background-color: var(--bg-button-login-cadastro-color);
+                        color: var(--text-second-color);
+                        padding: 5px 13px;
+                    }
+
+                    &:hover {
+                        background-color: var(--text-color);
+                        color: var(--bg-color);
+                    }
+
+                }
+            }
+
+                .admin-footer.active {
+                    background-color: var(--bg-alert-color);
+                    color: var(--text-alert-color);
+                    margin:  0 30px 20px 30px;
+                    padding: 7px;
+                    border-radius: 7px;
+                    display: flex;
+                    align-items: center;
+                }
 
         }
     }
@@ -467,41 +689,3 @@ overflow-y: auto;
 
 
 `
-
-/*
-
-<div className={`tab-content ${activeTab !== "profile" ? "hidden" : ""}`} id="profile">
-<div className="profile-header">
-    <h2>Configurações do perfil</h2>
-</div>
-
-<div className="profile-section">
-    <label htmlFor="newusername" className="profile-label">Digite como o chat deve te chamar</label>
-    <input type="text" className="profile-input" name="newusername" id="username" placeholder="Digite como o chat deve te chamar..." />
-
-    <label htmlFor="oldpassword" className="profile-label">Digite sua senha atual</label>
-    <div className="profile-input-wrapper">
-        <input type="password" className="profile-input" name="oldpassword" id="oldpassword" placeholder="Digite sua senha atual..." />
-        <i></i>
-    </div>
-
-    <div className="profile-checkbox">
-        <input type="checkbox" name="change-password" id="change-password" />
-        <label htmlFor="change-password">Desejo alterar a minha senha</label>
-    </div>
-
-    <label htmlFor="newpassword" className="profile-label">Digite sua nova senha</label>
-    <div className="profile-input-wrapper">
-        <input type="password" className="profile-input" name="newpassword" id="newpassword" placeholder="Digite sua nova senha..." />
-        <i className="fa fa-eye toggle-password" data-target="newpassword"></i>
-    </div>
-
-    <div className="profile-buttons">
-        <button type="button" className="profile-button cancel">Cancelar</button>
-        <button type="submit" className="profile-button save">Salvar</button>
-    </div>
-</div>
-
-</div>
- */
-
