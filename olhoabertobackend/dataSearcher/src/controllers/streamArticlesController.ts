@@ -6,6 +6,7 @@ import { Articles, IAConfig, Users } from "@/infra/db";
 async function* streamArticles(
   email: string | undefined,
   query: string,
+  idConversation: string | undefined,
 ): AsyncGenerator<{ streamArticles: SearchArticlesOutput }> {
   logger(`Searching for: ${query}...`);
 
@@ -54,15 +55,15 @@ async function* streamArticles(
     };
   }
 
-  if(email !== undefined)
+  if (email !== undefined && idConversation !== undefined)
     await Users.updateOne(
-      { email },
+      { email, "conversations._id": idConversation },
       {
         $push: {
-          conversations: {
-            messages: [
+          "conversations.$.messages": {
+            $each: [
               { content: query, role: "user" },
-              { content: answer, role: "admin" },
+              { content: answer, role: "assistant" },
             ],
           },
         },

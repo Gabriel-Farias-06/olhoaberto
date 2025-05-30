@@ -26,6 +26,10 @@ const UsersSchema = new mongoose.Schema({
   },
   conversations: [
     {
+      _id: {
+        type: String,
+        default: () => uuidv4(),
+      },
       messages: [
         {
           content: {

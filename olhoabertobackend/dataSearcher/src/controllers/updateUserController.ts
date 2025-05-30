@@ -4,14 +4,16 @@ import { Request, Response } from "express";
 
 export default async (req: Request, res: Response) => {
   const email = req.session.user!.email;
-  const { password, newName, newPassword } = req.body;
+
+  const { actualPassword, newName, newPassword } = req.body;
 
   const user = await Users.findOne({ email });
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
 
-  const passwordMatch = await bcrypt.compare(password, user.password);
+  const passwordMatch = await bcrypt.compare(actualPassword, user.password);
+
   if (!passwordMatch) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
@@ -25,4 +27,5 @@ export default async (req: Request, res: Response) => {
   );
 
   return res.status(200).json({ message: "User updated successfully" });
+
 };
