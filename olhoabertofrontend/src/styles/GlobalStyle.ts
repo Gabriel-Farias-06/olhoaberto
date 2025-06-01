@@ -30,6 +30,7 @@ const GlobalStyle = createGlobalStyle`
       --bg-profile-user-delet-hover: #fc1e1e;
       --bg-chat-input-color: #2a2a2a;
       --bg-hover-chat-input-color: #3a3a3a;
+      --bg-modal-input-cancel-color: #2a2a2a;
   }
 
   :root.light {
