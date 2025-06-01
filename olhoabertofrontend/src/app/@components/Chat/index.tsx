@@ -48,7 +48,7 @@ interface ChatProps {
     isOpen: boolean;
     conversations: Conversation[];
     toggleSidebar: () => void;
-    openModal: (tab: string) => void;
+    openModal: (tab: "alert" | "profile" | "admin") => void;
 }
 
 export default function Chat({ isOpen, conversations, toggleSidebar, openModal}: ChatProps) {

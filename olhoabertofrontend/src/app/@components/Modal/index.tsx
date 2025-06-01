@@ -25,19 +25,28 @@ import {
 import { marked } from "marked";
 import { useRouter } from 'next/navigation';
 import { UserData } from '@/types/User';
+import ConfirmDeleteUserModal from './ConfirmDeleteUserModal';
+import ConfirmSaveUserModal from './ConfirmSaveUserModal';
+import ConfirmSaveAdminModal from './ConfirmSaveAdminModal';
 
 
 interface ModalProps {
     closeModal: () => void;
     user: UserData
     setUser: (user: UserData) => void;
+    initialTab: "alert" | "profile" | "admin";
 }
 
 
-export default function Modal({ closeModal, user }: ModalProps) {
+export default function Modal({ closeModal, user, initialTab }: ModalProps) {
+    const [showConfirmDeleteUser, setShowConfirmDeleteUser] = useState(false);
+    const [showConfirmSaveUser, setShowConfirmSaveUser] = useState(false);
+    const [showConfirmSaveAdmin, setShowConfirmSaveAdmin] = useState(false);
+
+
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
-    const [activeTab, setActiveTab] = useState("alert");
+    const [activeTab, setActiveTab] = useState<"alert" | "profile" | "admin">(initialTab);
 
     return (
         <ModalOverlay>
@@ -45,11 +54,14 @@ export default function Modal({ closeModal, user }: ModalProps) {
 
                 <ModalHeader>
                     <h2>Configurações</h2>
-                    <FontAwesomeIcon
-                        icon={faXmark}
-                        className="fa-solid fa-xmark"
-                        onClick={closeModal}
-                    />
+                    <button onClick={closeModal}>
+                        <div className="box-xmark">
+                            <FontAwesomeIcon
+                                icon={faXmark}
+                                className="fa-solid fa-xmark"
+                            />
+                        </div>
+                    </button>
                 </ModalHeader>
 
                 <ModalBody>
@@ -101,7 +113,8 @@ export default function Modal({ closeModal, user }: ModalProps) {
                                 ></textarea>
 
                                 <div className="alert-buttons">
-                                    <button type="button" className="alert-button cancel">Cancelar</button>
+                                    <button type="button" className="alert-button cancel" onClick={closeModal}>
+                                        Cancelar</button>
                                     <button type="submit" className="alert-button create">Criar</button>
                                 </div>
 
@@ -129,10 +142,10 @@ export default function Modal({ closeModal, user }: ModalProps) {
                                     />
                                 </div>
 
-                                <div className="profile-checkbox">
+                                {/* <div className="profile-checkbox">
                                     <input type="checkbox" name="change-password" id="change-password" />
                                     <label htmlFor="change-password">Desejo alterar a minha senha</label>
-                                </div>
+                                </div> */}
 
                                 <label htmlFor="newpassword" className="profile-label">Digite sua nova senha</label>
                                 <div className="profile-input-wrapper">
@@ -143,8 +156,13 @@ export default function Modal({ closeModal, user }: ModalProps) {
                                 </div>
 
                                 <div className="profile-buttons">
-                                    <button type="button" className="profile-button cancel">Cancelar</button>
-                                    <button type="submit" className="profile-button save">Salvar</button>
+                                    <button type="button" className="profile-button cancel" onClick={closeModal}>
+                                        Cancelar</button>
+                                    <button type="submit" className="profile-button save"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            setShowConfirmSaveUser(true)
+                                        }} >Salvar</button>
                                 </div>
 
                                 <footer className="profile-footer">
@@ -156,7 +174,11 @@ export default function Modal({ closeModal, user }: ModalProps) {
 
                             <div className="profile-delet">
                                 <h2>Deletar sua conta</h2>
-                                <button type="submit" className="profile-button-delet">Excluir Conta</button>
+                                <button type="submit" className="profile-button-delet"
+                                    onClick={(e) => {
+                                            e.preventDefault()
+                                            setShowConfirmDeleteUser(true)
+                                        }} >Excluir Conta</button>
                             </div>
 
                         </div>
@@ -217,9 +239,24 @@ export default function Modal({ closeModal, user }: ModalProps) {
                                     required
                                 />
 
+                                <label htmlFor="adminDescription" className="admin-label">Instruções para IA</label>
+                                <textarea
+                                    className="admin-input"
+                                    name="adminDescription"
+                                    id="adminDescription"
+                                    placeholder="Descreva as intruções de como a IA deve agir..."
+                                    rows={4}
+                                    required
+                                ></textarea>
+
                                 <div className="admin-buttons">
-                                    <button type="button" className="admin-button cancel">Cancelar</button>
-                                    <button type="submit" className="admin-button save">Salvar</button>
+                                    <button type="button" className="admin-button cancel" onClick={closeModal}>
+                                        Cancelar</button>
+                                    <button type="submit" className="admin-button save"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            setShowConfirmSaveAdmin(true)
+                                        }}>Salvar</button>
                                 </div>
 
                                 <footer className="admin-footer">
@@ -229,6 +266,18 @@ export default function Modal({ closeModal, user }: ModalProps) {
                         </div>
 
                     </ModalTabContent>
+
+                    {showConfirmDeleteUser && (
+                        <ConfirmDeleteUserModal onClose={() => setShowConfirmDeleteUser(false) } /> 
+                    )}
+
+                    {showConfirmSaveUser && (
+                        <ConfirmSaveUserModal onClose={() => setShowConfirmSaveUser(false) } /> 
+                    )}
+
+                    {showConfirmSaveAdmin && (
+                        <ConfirmSaveAdminModal onClose={() => setShowConfirmSaveAdmin(false) } /> 
+                    )}
 
                 </ModalBody>
 
