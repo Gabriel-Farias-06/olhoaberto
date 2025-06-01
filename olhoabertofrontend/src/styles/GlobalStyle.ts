@@ -28,6 +28,8 @@ const GlobalStyle = createGlobalStyle`
       --text-alert-error-color: #721c24;
       --bg-profile-user-delet: #fc5b5b;
       --bg-profile-user-delet-hover: #fc1e1e;
+      --bg-chat-input-color: #2a2a2a;
+      --bg-hover-chat-input-color: #3a3a3a;
   }
 
   :root.light {
@@ -54,6 +56,8 @@ const GlobalStyle = createGlobalStyle`
       --text-alert-sucess-color: #155724;
       --bg-alert-error-color: #f8d7da;
       --text-alert-error-color: #721c24;
+      --bg-chat-input-color: #e0e0e0;
+      --bg-hover-chat-input-color: #d5d5d5;
   } 
 
   *, *::before, *::after {
