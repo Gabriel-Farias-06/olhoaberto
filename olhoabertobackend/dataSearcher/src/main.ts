@@ -101,6 +101,7 @@ connectDb().then(async () => {
     } else {
       res.status(401).json({ message: 'Não autenticado' });
     }
+  })
 
   app.post("/login", (req, res) => {
     const { email, password } = req.body || {};
