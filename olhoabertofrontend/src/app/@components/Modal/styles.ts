@@ -16,6 +16,7 @@ z-index: 999;
 }
 
 `
+
 export const ModalContent = styled.div`
 
 background-color: var(--bg-color);
@@ -28,6 +29,7 @@ max-width: 80%;
 overflow: hidden;
 
 `
+
 export const ModalHeader = styled.div`
 
 background-color: var(--bg-sidebar-color);
@@ -37,8 +39,23 @@ align-items: center;
 padding: 20px 25px;
 border-bottom: 2px solid var(--border-chat-color);
 
-.fa-solid {
-    font-size: 25px;
+button {
+    background: none;
+
+    .box-xmark {
+        border-radius: 50%;
+        padding: 4px 8px;
+        transition: background 0.2s;
+    
+        .fa-solid {
+            font-size: 25px;
+            color: var(--text-color);
+        }
+    
+        &:hover {
+            background: var(--bg-hover-chat-input-color);
+        }
+    }
 }
 
 `
@@ -160,7 +177,7 @@ overflow-y: auto;
                     transition-duration: 0.2s;
 
                     &.cancel {
-                        background-color: var(--bg-color);
+                        background-color: var(--bg-modal-input-cancel-color);
                         border: 1px solid var(--border-button-login-cadastro-color);
                         color: var(--text-color);
                         padding: 5px 7px;
@@ -279,7 +296,7 @@ overflow-y: auto;
                     transition-duration: 0.2s;
 
                     &.cancel {
-                        background-color: var(--bg-color);
+                        background-color: var(--bg-modal-input-cancel-color);
                         border: 1px solid var(--border-button-login-cadastro-color);
                         color: var(--text-color);
                         padding: 5px 7px;
@@ -361,6 +378,8 @@ overflow-y: auto;
                 width: 100%;
                 margin: 5px 0 0 0;
                 padding: 10px 7px;
+                resize: none;
+                font-size: 12px;
             }
 
             .admin-input-wrapper {
@@ -391,7 +410,7 @@ overflow-y: auto;
                     transition-duration: 0.2s;
 
                     &.cancel {
-                        background-color: var(--bg-color);
+                        background-color: var(--bg-modal-input-cancel-color);
                         border: 1px solid var(--border-button-login-cadastro-color);
                         color: var(--text-color);
                         padding: 5px 7px;
@@ -426,4 +445,122 @@ overflow-y: auto;
 }
 
 
+`
+
+
+
+
+export const ModalOverlayConfirm = styled.div`
+background-color: var(--bg-modal-color);
+color: var(--text-color);
+position: fixed;
+inset: 0;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 999;
+
+&.hidden {
+    display: none;
+}
+`
+
+export const ModalContentConfirm = styled.div`
+background-color: var(--bg-color);
+border: 3px solid var(--border-chat-color);
+border-radius: 30px;
+display: flex;
+flex-direction: column;
+width: 450px;
+max-width: 70%;
+overflow: hidden;
+`
+
+export const ModalHeaderConfirm = styled.div`
+
+background-color: var(--bg-sidebar-color);
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 15px 20px 10px 20px;
+border-bottom: 2px solid var(--border-chat-color);
+
+button {
+    background: none;
+    
+    .box-xmark {
+        border-radius: 50%;
+        padding: 2px 6px;
+        transition: background 0.2s;
+    
+        .fa-solid {
+            font-size: 20px;
+            color: var(--text-color);
+        }
+    
+        &:hover {
+            background: var(--bg-hover-chat-input-color);
+        }
+    }
+}
+
+`
+export const ModalBodyConfirm = styled.div`
+
+display: flex;
+flex-direction: column;
+height: 130px;
+max-height: 60%;
+padding: 15px 20px; 
+font-size: 13px;
+hyphens: auto;
+overflow-y: hidden;
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 7px;
+
+    .modal-button {
+        margin-left: 7px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition-duration: 0.2s;
+
+        &.cancel {
+            background-color: var(--bg-modal-input-cancel-color);
+            border: 1px solid var(--border-button-login-cadastro-color);
+            color: var(--text-color);
+            padding: 5px 7px;
+        }
+
+        &.save {
+            background-color: var(--bg-button-login-cadastro-color);
+            color: var(--text-second-color);
+            padding: 5px 13px;
+        }
+
+        &.delet {
+            background-color: var(--bg-profile-user-delet);
+            color: var(--text-color);
+            font-weight: bold;
+            margin-left: 7px;
+            padding: 0 7px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition-duration: 0.2s;
+
+            &:hover {
+                background-color: var(--bg-profile-user-delet-hover);
+                color: var(--text-color);
+            }
+        }
+
+        &:hover {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+        }
+
+    }
+}
 `
