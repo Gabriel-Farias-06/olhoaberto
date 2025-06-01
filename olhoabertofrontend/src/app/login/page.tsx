@@ -53,7 +53,7 @@ export default function Login() {
 
             setTimeout(() => {
                 router.push("/")
-            }, 3000);
+            }, 1000);
 
         } catch (err: any) {
             setMessage(err.message || "Erro ao fazer login");
