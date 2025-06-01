@@ -15,21 +15,26 @@ export default function HomePage() {
     const [user, setUser] = useState<UserData | null>(null)
     const [showModal, setShowModal] = useState(false);
     const [isOpen, setIsOpen] = useState(true);
+    const [modalTab, setModalTab] = useState<"alert" | "profile" | "admin">("alert");
 
     const toggleSidebar = () => setIsOpen(!isOpen);
 
-    const openModal = () => setShowModal(true);
-    
+    const openModal = (tab: "alert" | "profile" | "admin") => {
+        setModalTab(tab);
+        setShowModal(true);
+    };
+
+
     useEffect(() => {
         async function checkAuth() {
             try {
                 const res = await fetch("http://localhost:4000/me", {
                     credentials: "include",
                 });
-    
+
                 const data = await res.json();
                 console.log('Status da resposta:', data);
-    
+
                 if (!res.ok) {
                     router.push("/login");
                 } else {
@@ -48,23 +53,24 @@ export default function HomePage() {
         <AppContainer>
             {user && (
                 <>
-                    <Sidebar 
+                    <Sidebar
                         isOpen={isOpen}
                         toggleSidebar={toggleSidebar}
                         userName={user.name}
                         conversations={user.conversations}
                     />
-                    <Chat 
+                    <Chat
                         isOpen={isOpen}
                         toggleSidebar={toggleSidebar}
                         conversations={user.conversations}
                         openModal={openModal}
                     />
                     {showModal && (
-                        <Modal 
+                        <Modal
                             closeModal={() => setShowModal(false)}
                             user={user}
                             setUser={setUser}
+                            initialTab={modalTab}
                         />
                     )}
                 </>
