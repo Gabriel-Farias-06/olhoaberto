@@ -25,8 +25,10 @@ import {
 } from "./styles";
 import { marked } from "marked";
 import { useRouter } from 'next/navigation';
-import { Conversation } from '@/types/User';
+import { Dispatch, SetStateAction } from "react";
+import { UserData, Conversation } from '@/types/User';
 import { useLogout } from '@/hooks/userLogout';
+import { Message } from "@/types/User";
 
 type QuerySources = {
     pdfPage: string;
@@ -39,26 +41,26 @@ type QueryAnswer = {
     sources: QuerySources[];
 };
 
-type Message = {
-    sender: "user" | "bot";
-    text: string;
-}
-
 interface ChatProps {
     isOpen: boolean;
-    conversations: Conversation[];
+    user: UserData;
     toggleSidebar: () => void;
     openModal: (tab: "alert" | "profile" | "admin") => void;
+    idConversation: string | null;
+    setIdConversation: React.Dispatch<React.SetStateAction<string | null>>;
+    selectedConversation: Conversation | null;
+    messages: Message[];
+    setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
-export default function Chat({ isOpen, conversations, toggleSidebar, openModal}: ChatProps) {
+export default function Chat({ isOpen, user, toggleSidebar, openModal,
+    idConversation, setIdConversation, selectedConversation, setMessages, messages }: ChatProps) {
     const router = useRouter();
 
     const [query, setQuery] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [answer, setAnswer] = useState<QueryAnswer>();
 
-    const [messages, setMessages] = useState<Message[]>([]);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [isLightMode, setIsLightMode] = useState(false);
     const { handleLogout } = useLogout();
@@ -73,12 +75,32 @@ export default function Chat({ isOpen, conversations, toggleSidebar, openModal}:
         if (!query.trim()) return;
 
         setIsLoading(true);
-        setMessages((prev) => [...prev, { sender: "user", text: query }]);
+        setMessages((prev) => [...prev, { content: query, role: "user" }]);
         setQuery("");
 
         try {
+            let currentConversationId = idConversation;
 
-            const res = await fetch(`http://localhost:4000/stream?q=${query}`);
+            if (!currentConversationId) {
+                console.log("Criando nova conversa:", `http://localhost:4000/conversations/${user._id}`, { title: query });
+                const res = await fetch(`http://localhost:4000/conversations/${user._id}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title: query }),
+                });
+
+                const data = await res.json();
+                console.log("Resposta do POST conversations:", data);
+                const conversations = data.conversations;
+                const newConv = conversations[conversations.length - 1];
+                currentConversationId = newConv._id;
+                setIdConversation(currentConversationId)
+
+            };
+
+            const res = await fetch(`http://localhost:4000/stream?q=${query}&idConversation=${idConversation}&email=${user.email}`);
+            const dataText = await res.text();
+            console.log("Resposta texto completa:", dataText);
 
             const reader = res.body?.getReader();
             const decoder = new TextDecoder("utf-8");
@@ -122,21 +144,21 @@ export default function Chat({ isOpen, conversations, toggleSidebar, openModal}:
             if (responseText.trim()) {
                 const htmlAnswer = await marked(responseText);
 
-                setMessages((prev) => [...prev, { sender: "bot", text: htmlAnswer }]);
+                setMessages((prev) => [...prev, { content: htmlAnswer, role: "assistant" }]);
                 setAnswer({
                     answer: htmlAnswer,
                     sources: sources,
                 });
-            } else { //sem resposta do bot
+            } else { //sem resposta do assistant
                 setMessages((prev) => [
                     ...prev,
-                    { sender: "bot", text: "Desculpa, não encontrei uma resposta para isso :'(" },
+                    { content: "Desculpa, não encontrei uma resposta para isso :'(", role: "assistant" },
                 ])
             }
         } catch (err) { // Erro de rede ou api
             setMessages((prev) => [
                 ...prev,
-                { sender: "bot", text: "Erro ao buscar resposta. Tente novamente." },
+                { content: "Erro ao buscar resposta. Tente novamente.", role: "assistant" },
             ])
         } finally {
             setIsLoading(false);
@@ -230,16 +252,16 @@ export default function Chat({ isOpen, conversations, toggleSidebar, openModal}:
 
             <ChatMessages>
                 <div className="message user">Quanto o governo investiu em educação?</div>
-                <div className="message bot">Em 2025, foi investido quantos reais em educação?</div>
+                <div className="message assistant">Em 2025, foi investido quantos reais em educação?</div>
 
                 {messages.map((msg, index) => (
-                    <div key={index} className={`message ${msg.sender}`}
-                        dangerouslySetInnerHTML={{ __html: msg.text }}
+                    <div key={index} className={`message ${msg.role}`}
+                        dangerouslySetInnerHTML={{ __html: msg.content }}
                     />
                 ))}
 
                 {isLoading && (
-                    <div className="message bot loading">
+                    <div className="message assistant loading">
                         Buscando resposta...
                     </div>
                 )}

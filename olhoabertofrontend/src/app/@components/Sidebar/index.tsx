@@ -24,13 +24,15 @@ import { Conversation } from '@/types/User';
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
-  userName: string
-  conversations: Conversation[]
+  userName: string;
+  conversations: Conversation[];
+  onSelectConversation: (conversation: Conversation) => void;
+  onNewConversation: () => void;
 }
 
 export default function Sidebar({ 
-  isOpen, toggleSidebar,
-  userName, conversations
+  isOpen, toggleSidebar, userName, 
+  conversations, onSelectConversation, onNewConversation
 }: SidebarProps) {
 
   const router = useRouter();

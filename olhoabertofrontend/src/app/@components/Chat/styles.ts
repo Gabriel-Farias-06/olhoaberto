@@ -63,7 +63,7 @@ background: var(--bg-chat-messages-color);
         align-self: flex-end;
     }
 
-    &.bot {
+    &.assistant {
         background: var(--bg-message-bot-color);
         align-self: flex-start;
     }
