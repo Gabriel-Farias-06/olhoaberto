@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  olhoabertobackend:
+    network_mode: "host"
+    build:
+      context: ./olhoabertobackend/dataSearcher
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    restart: unless-stopped
+
+  olhoabertofrontend:
+    build:
+      context: .
+      dockerfile: ./olhoabertofrontend/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./nextjs-app:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok_tunnel
+    env_file:
+      - ./.env
+    environment:
+      NGROK_TUNNEL_PORT: 3000
+      NGROK_TUNNEL_HOST: olhoabertofrontend
+      NGROK_TUNNEL_PROTO: http
+    command: "http olhoabertofrontend:3000" # <-- CHANGE THIS LINE
+    ports:
+      - "4040:4040"
+    depends_on:
+      - olhoabertofrontend
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  redis_data:
+    driver: local
