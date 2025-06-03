@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   olhoabertobackend:
     network_mode: "host"
@@ -7,17 +5,17 @@ services:
       context: ./olhoabertobackend/dataSearcher
       dockerfile: Dockerfile
     env_file:
-      - ./.env
+      - ./olhoabertobackend/dataSearcher/.env
     restart: unless-stopped
 
   olhoabertofrontend:
     build:
-      context: .
-      dockerfile: ./olhoabertofrontend/Dockerfile
+      context: ./olhoabertofrontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     volumes:
-      - ./nextjs-app:/app
+      - ./olhoabertofrontend:/app
       - /app/node_modules
     environment:
       NODE_ENV: development
@@ -31,7 +29,7 @@ services:
       NGROK_TUNNEL_PORT: 3000
       NGROK_TUNNEL_HOST: olhoabertofrontend
       NGROK_TUNNEL_PROTO: http
-    command: "http olhoabertofrontend:3000" # <-- CHANGE THIS LINE
+    command: "http olhoabertofrontend:3000"
     ports:
       - "4040:4040"
     depends_on:
