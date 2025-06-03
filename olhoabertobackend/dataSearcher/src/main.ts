@@ -18,15 +18,17 @@ import { connectDb } from "./infra/db";
 
 dotenv.config();
 
-connectDb().then(async () => {
+connectDb().then(() => {
   const app = express();
 
-  app.use(cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-  }));
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
 
   app.use(express.json());
   app.use(cookieParser());
@@ -37,33 +39,44 @@ connectDb().then(async () => {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: false,
-        maxAge: 120 * 60 * 1000,
+        secure: process.env.NODE_ENV === "production", // Set secure to true in production
+        maxAge: 120 * 60 * 1000, // 2 hours
       },
-    }),
+    })
   );
 
   app.get("/stream", async (req, res) => {
-    const query = req.query.q as string;
-    const email = req.query.email as string | undefined;
-    const idConversation = req.query.idConversation as string | undefined;
+    const { q: query, email, idConversation } = req.query;
 
-    console.log(query);
-    console.log(email);
-    console.log(idConversation);
+    if (!query) {
+      res.status(400).json({ message: "Query parameter 'q' is required." });
+    }
+
+    console.log("Stream request received:", { query, email, idConversation });
 
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.setHeader("Transfer-Encoding", "chunked");
     res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
 
     try {
-      for await (const chunk of streamArticles(email, query, idConversation)) {
-        res.write(JSON.stringify(chunk.streamArticles) + "\n");
+      const streamEmail = typeof email === "string" ? email : undefined;
+      const streamIdConversation =
+        typeof idConversation === "string" ? idConversation : undefined;
+
+      for await (const chunk of streamArticles(
+        streamEmail,
+        query as string,
+        streamIdConversation
+      )) {
+        res.write(JSON.stringify(chunk) + "\n");
       }
       res.end();
     } catch (err) {
-      console.error(err);
-      res.status(500).end("Error during streaming");
+      console.error("Error during streaming:", err);
+      res
+        .status(500)
+        .end(JSON.stringify({ message: "Error during article streaming." }));
     }
   });
 
@@ -71,80 +84,81 @@ connectDb().then(async () => {
     "/conversations/:userId",
     authenticatedMiddlewareController,
     (req, res) => {
-      const { userId } = req.params || {};
+      const { userId } = req.params;
       if (!userId) {
         res.status(400).json({ message: "The userId is required" });
       }
       addConversation(req, res, userId);
-    },
+    }
   );
 
   app.post("/signup", (req, res) => {
     const { name, email, password } = req.body;
-
     signUpController(name, email, password, req, res);
   });
 
-  app.get('/me', async (req, res) => {
-    console.info('Cookies recebidos:', req.headers.cookie)
-    console.info('Sessão:', req.session);
+  app.get("/me", (req, res) => {
+    console.info("Cookies recebidos:", req.headers.cookie);
+    console.info("Sessão:", req.session);
 
     if (req.session?.user?.id) {
       res.status(200).json({
-        message: 'Autenticado',
+        message: "Authenticated",
         user: {
           id: req.session.user.id,
           name: req.session.user.name,
-          email: req.session.user.email
-        }
+          email: req.session.user.email,
+        },
       });
     } else {
-      res.status(401).json({ message: 'Não autenticado' });
+      res.status(401).json({ message: "Not authenticated" });
     }
+  });
 
   app.post("/login", (req, res) => {
-    const { email, password } = req.body || {};
+    const { email, password } = req.body;
     if (!email || !password) {
-      res.status(400).json("Email and password are obrigatories");
-      return;
+      res.status(400).json({ message: "Email and password are required" });
     }
-
     loginController(email, password, req, res);
   });
 
   app.post("/logout", (req, res) => {
-    req.session.destroy(() => {
-      res.status(200).json({ message: "Logout sucessful" });
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+        res.status(500).json({ message: "Failed to logout." });
+      }
+      res.status(200).json({ message: "Logout successful" });
     });
   });
 
   app.put("/updateUser", authenticatedMiddlewareController, (req, res) => {
-    const { actualPassword } = req.body || {};
-    const { newPassword } = req.body || {};
-    const { newName } = req.body || {};
+    const { actualPassword, newPassword, newName } = req.body;
 
     if (!actualPassword || (!newPassword && !newName)) {
       res
         .status(400)
-        .json({ message: "Password and new informations are required" });
-      return;
+        .json({ message: "Current password and new information are required" });
     }
     updateUserController(req, res);
   });
 
   app.delete("/deleteUser", authenticatedMiddlewareController, (req, res) => {
-    const { password } = req.body || {};
+    const { password } = req.body;
     if (!password) {
       res.status(400).json({ message: "Password is required" });
-      return;
     }
-
     deleteUserController(req, res);
   });
 
   app.put("/instructions", authenticatedMiddlewareController, (req, res) => {
     const { instructions } = req.body;
-    const { email } = req.session.user!;
+    if (!req.session?.user?.email) {
+      res.status(401).json({ message: "User not authenticated." });
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { email } = req.session.user as unknown as any;
     updateInstructions(email, instructions, res);
   });
 
