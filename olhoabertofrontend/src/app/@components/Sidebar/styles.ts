@@ -7,7 +7,8 @@ interface SidebarProps {
 export const SidebarContainer = styled.div<SidebarProps>`
   display: flex;
   flex-direction: column;
-  width: ${props => (props.$isOpen ? '350px' : '0px')};
+  width: ${props => (props.$isOpen ? '300px' : '0px')};
+  min-width: ${props => (props.$isOpen ? '250px' : '0px')};
   height: 100vh;
   background-color: var(--bg-sidebar-color);
   padding: ${props => (props.$isOpen ? '25px 35px' : '0px')}; 
@@ -29,6 +30,12 @@ font-size: 25px;
     margin-right: 20px;
 }
 
+.fa-square-plus {
+  font-size: 25px;
+}
+
+
+
 `
 
 export const SidebarChats = styled.div`
@@ -36,20 +43,18 @@ padding: 15px 0px;
 overflow-y: auto;
 
 .name-user {
-    padding: 0px 5px;
+    padding: 5px 5px;
     font-size: 20px;
     font-weight: bold;
 }
 
 .chat-group {
-    padding: 15px 5px 7px 5px;
+    padding: 7px 0px;
     margin-bottom: 5px;
-    border-bottom: 2px solid var(--border-color);
 
-    p {
-        padding-bottom: 7px;
-        font-size: 20px;
-        font-weight: bold;  
+    .conversation-group {
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border-color);
     }
 
     .conversation-list {
@@ -57,11 +62,35 @@ overflow-y: auto;
         overflow-y: auto;
 
         li {
-            padding: 5px 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+          padding: 5px 0px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
+
+        .conversation-title {
+          font-size: 15px;
+          font-weight: bold;
+          padding: 5px 7px;
+        }
+
+        .conversation-chat {
+          padding: 6px 7px;
+          margin-bottom: 1px;
+          border-radius: 9px;
+          transition: 0.1s;
+          cursor: pointer;
+
+          &:hover{
+            background-color: var(--border-color);
+          }
+        }
+
+        .active-conversation {
+          background-color: var(--border-color);
+        }
+
+        
     } 
 }
 

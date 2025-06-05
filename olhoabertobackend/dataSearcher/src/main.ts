@@ -4,6 +4,8 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
+import Users from "./infra/db/users.model";
+
 import {
   loginController,
   signUpController,
@@ -67,8 +69,7 @@ connectDb().then(async () => {
     }
   });
 
-  app.post(
-    "/conversations/:userId",
+  app.post("/conversations/:userId",
     authenticatedMiddlewareController,
     (req, res) => {
       const { userId } = req.params || {};
@@ -79,6 +80,7 @@ connectDb().then(async () => {
     },
   );
 
+
   app.post("/signup", (req, res) => {
     const { name, email, password } = req.body;
 
@@ -86,22 +88,83 @@ connectDb().then(async () => {
   });
 
   app.get('/me', async (req, res) => {
-    console.info('Cookies recebidos:', req.headers.cookie)
-    console.info('Sessão:', req.session);
+    console.log('Sessão no /me:', req.session.user);
 
     if (req.session?.user?.id) {
       res.status(200).json({
         message: 'Autenticado',
         user: {
-          id: req.session.user.id,
+          _id: req.session.user.id,
           name: req.session.user.name,
-          email: req.session.user.email
+          email: req.session.user.email,
+          role: req.session.user.role,
+          conversations: req.session.user.conversations
         }
       });
     } else {
       res.status(401).json({ message: 'Não autenticado' });
     }
-  })
+  });
+
+
+  app.get("/conversations", authenticatedMiddlewareController, async (req, res) => {
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: "Não autenticado." });
+      return;
+    }
+
+    const user = await Users.findById(userId).populate({
+      path: "conversations",
+      populate: { path: "messages" }
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "Usuário não encontrado." });
+      return;
+    }
+
+    res.status(200).json({ conversations: user.conversations });
+    return;
+  });
+
+
+  app.get("/conversations/:conversationId", authenticatedMiddlewareController, async (req, res) => {
+    const { conversationId } = req.params;
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: "Não autenticado." });
+      return; // para aqui!
+    }
+
+    const user = await Users.findById(userId).populate({
+      path: "conversations",
+      populate: {
+        path: "messages",
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "Usuário não encontrado." });
+      return; // para aqui!
+    }
+
+    const conversation = user.conversations.find(
+      (conv) => conv._id === conversationId
+    );
+
+    if (!conversation) {
+      res.status(404).json({ message: "Conversa não encontrada." });
+      return; // para aqui!
+    }
+
+    // Se chegou aqui, tudo ok
+    res.status(200).json({ conversation });
+  });
+
+
 
   app.post("/login", (req, res) => {
     const { email, password } = req.body || {};

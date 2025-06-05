@@ -24,6 +24,8 @@ declare module "express-session" {
       id: string;
       name: string;
       email: string;
+      role: string;
+      conversations: any[]; 
     };
   }
 }

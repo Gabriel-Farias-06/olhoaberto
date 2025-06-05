@@ -1,7 +1,7 @@
 export type UserData = {
+    _id: string;
     name: string;
     email: string;
-    _id: string;
     role: "admin" | "user";
     conversations: Conversation[];
 }

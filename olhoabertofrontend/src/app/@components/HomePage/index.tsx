@@ -20,7 +20,9 @@ export default function HomePage() {
     const [idConversation, setIdConversation] = useState<string | null>(null);
     const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
-    
+    const [conversations, setConversations] = useState<Conversation[]>([]);
+    const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+
     const toggleSidebar = () => setIsOpen(!isOpen);
 
     const openModal = (tab: "alert" | "profile" | "admin") => {
@@ -28,11 +30,48 @@ export default function HomePage() {
         setShowModal(true);
     };
 
-    const handleSelectConversation = (conversation: Conversation) => {
-        setSelectedConversation(conversation);
-        setIdConversation(conversation._id);
-        setMessages(conversation.messages);
+    const handleConversationCreated = async (newConv: Conversation) => {
+        setIdConversation(newConv._id);
+        setSelectedConversation(newConv);
+        setConversations((prev) => [...prev, newConv]);
     };
+
+    const handleSelectConversation = async (conversation: Conversation) => {
+        try {
+            const res = await fetch(`http://localhost:4000/conversations/${conversation._id}`, {
+                credentials: "include"
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Erro ao carregar conversa: ${res.status} - ${errorText}`);
+            }
+
+            const fullConversation = await res.json();
+
+            setSelectedConversation(fullConversation.conversation);
+            setIdConversation(fullConversation.conversation._id);
+            setMessages(fullConversation.conversation.messages);
+            setSelectedConversationId(conversation._id);
+        } catch (err) {
+            console.error("Erro ao carregar conversa completa:", err);
+        }
+    };
+
+
+    useEffect(() => {
+        const fetchConversations = async () => {
+            const res = await fetch("http://localhost:4000/conversations", {
+                credentials: "include"
+            });
+
+            const data = await res.json();
+            setConversations(data.conversations);
+        };
+
+        fetchConversations();
+    }, []);
+
 
     const handleNewConversation = () => {
         setMessages([]);
@@ -49,13 +88,15 @@ export default function HomePage() {
 
                 const data = await res.json();
                 console.log('Status da resposta:', data);
+                const { user } = data;
 
-                if (!res.ok) {
-                    router.push("/login");
+                if (user) {
+                    const { _id, email, name, role, conversations } = user;
+                    setUser({ _id, email, name, role, conversations });
                 } else {
-                    const { name, email, _id, role, conversations } = data.user;
-                    setUser({ name, email, _id, role, conversations })
+                    router.push('/login');
                 }
+
             } catch (err) {
                 console.error("Erro ao verificar autenticação: ", err)
                 router.push("/login")
@@ -72,10 +113,12 @@ export default function HomePage() {
                         isOpen={isOpen}
                         toggleSidebar={toggleSidebar}
                         userName={user.name}
-                        conversations={user.conversations}
+                        conversations={conversations}
+                        selectedConversationId={selectedConversationId}
                         onSelectConversation={handleSelectConversation}
                         onNewConversation={handleNewConversation}
                     />
+
                     <Chat
                         isOpen={isOpen}
                         toggleSidebar={toggleSidebar}
@@ -86,7 +129,9 @@ export default function HomePage() {
                         selectedConversation={selectedConversation}
                         setMessages={setMessages}
                         messages={messages}
+                        onConversationCreated={handleConversationCreated}
                     />
+
                     {showModal && (
                         <Modal
                             closeModal={() => setShowModal(false)}

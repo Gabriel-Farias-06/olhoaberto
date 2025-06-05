@@ -26,17 +26,83 @@ interface SidebarProps {
   toggleSidebar: () => void;
   userName: string;
   conversations: Conversation[];
+  selectedConversationId: string | null;
   onSelectConversation: (conversation: Conversation) => void;
   onNewConversation: () => void;
 }
 
-export default function Sidebar({ 
-  isOpen, toggleSidebar, userName, 
-  conversations, onSelectConversation, onNewConversation
+
+export default function Sidebar({
+  isOpen, toggleSidebar, userName, conversations,
+  selectedConversationId, onSelectConversation, onNewConversation
 }: SidebarProps) {
 
   const router = useRouter();
   const { handleLogout } = useLogout();
+
+  const renderConversations = () => {
+    if (!conversations || conversations.length === 0) {
+      return <p>Nenhuma conversa encontrada.</p>;
+    }
+
+    const grouped = groupConversationsByDate(conversations);
+
+    return (
+      <ul className="conversation-list">
+        {Object.entries(grouped).map(([section, convs]) =>
+          convs.length > 0 ? (
+            <li className="conversation-group" key={section}>
+              <p className={`conversation-title`}>{section}</p>
+              <ul>
+                {convs.map((conv) => (
+                  <li
+                    key={conv._id}
+                    onClick={() => onSelectConversation(conv)}
+                    className={`conversation-chat${conv._id === selectedConversationId ? " active-conversation" : ""}`} 
+                    title={conv.messages.length > 0 ? conv.messages[0].content : "Sem mensagens"}
+                  >
+                    {conv.messages.length > 0
+                      ? conv.messages[0].content.slice(0, 30) + "..."
+                      : "Nova conversa"}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ) : null
+        )}
+      </ul>
+    );
+  };
+
+
+  const groupConversationsByDate = (convs: Conversation[]) => {
+    const today: Record<string, Conversation[]> = {};
+    const yesterday: Record<string, Conversation[]> = {};
+    const last7Days: Record<string, Conversation[]> = {};
+    const last30Days: Record<string, Conversation[]> = {};
+
+    const now = new Date();
+    const result = {
+      Hoje: [] as Conversation[],
+      Ontem: [] as Conversation[],
+      "Últimos 7 dias": [] as Conversation[],
+      "Últimos 30 dias": [] as Conversation[]
+    };
+
+    convs.forEach((conv) => {
+      const startedAt = new Date(conv.startedAt);
+      const diffInMs = now.getTime() - startedAt.getTime();
+      const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+      if (diffInDays === 0) result.Hoje.push(conv);
+      else if (diffInDays === 1) result.Ontem.push(conv);
+      else if (diffInDays <= 7) result["Últimos 7 dias"].push(conv);
+      else if (diffInDays <= 30) result["Últimos 30 dias"].push(conv);
+    });
+
+    return result;
+  };
+
 
   return (
     <SidebarContainer $isOpen={isOpen}>
@@ -44,25 +110,23 @@ export default function Sidebar({
         <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
           <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
         </button>
-        <FontAwesomeIcon icon={faSquarePlus} className="fa-regular fa-square-plus" />
+
+        <button
+          aria-label="Criar nova conversa"
+          onClick={onNewConversation}
+          style={{ background: "none", border: "none", cursor: "pointer" }}
+        >
+          <FontAwesomeIcon icon={faSquarePlus} className="fa-regular fa-square-plus" />
+        </button>
+
       </SidebarHeader>
       <SidebarChats>
         <div className="name-user">
-          {userName ? `Olá, ${userName}` : "Carregando..."}
+          {userName ? `Bem vindo, ${userName}` : "Carregando..."}
         </div>
         <div className="chat-group">
-          <p>Hoje</p>
-          <ul className="conversation-list">
-            <li>Investimentos na educação DF</li>
-            <li>Renda Anual SP</li>
-          </ul>
-        </div>
-        <div className="chat-group">
-          <p>Ontem</p>
-          <ul className="conversation-list">
-            <li>Consulta de dados pessoais</li>
-            <li>Quanto o governo investiu em saúde em 2023 e 2024</li>
-          </ul>
+          {/* <p>Conversas</p> */}
+          {renderConversations()}
         </div>
       </SidebarChats>
       <SidebarFooter>

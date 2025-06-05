@@ -51,10 +51,11 @@ interface ChatProps {
     selectedConversation: Conversation | null;
     messages: Message[];
     setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+    onConversationCreated: (conv: Conversation) => void;
 }
 
-export default function Chat({ isOpen, user, toggleSidebar, openModal,
-    idConversation, setIdConversation, selectedConversation, setMessages, messages }: ChatProps) {
+export default function Chat({ isOpen, user, toggleSidebar, openModal, idConversation, 
+    setIdConversation, selectedConversation, setMessages, messages, onConversationCreated }: ChatProps) {
     const router = useRouter();
 
     const [query, setQuery] = useState("");
@@ -81,39 +82,56 @@ export default function Chat({ isOpen, user, toggleSidebar, openModal,
         try {
             let currentConversationId = idConversation;
 
+            console.log("Tentando criar conversa para o user:", user);
             if (!currentConversationId) {
-                console.log("Criando nova conversa:", `http://localhost:4000/conversations/${user._id}`, { title: query });
                 const res = await fetch(`http://localhost:4000/conversations/${user._id}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ title: query }),
+                    credentials: "include",
                 });
 
+                if (!res.ok) {
+                    throw new Error(`Erro ao criar conversa: status ${res.status}`);
+                }
+
                 const data = await res.json();
-                console.log("Resposta do POST conversations:", data);
-                const conversations = data.conversations;
-                const newConv = conversations[conversations.length - 1];
+                const newConv = data.conversation;
+
+                if (!newConv || !newConv._id) {
+                    throw new Error("Resposta inválida: conversa criada sem _id");
+                }
+
                 currentConversationId = newConv._id;
-                setIdConversation(currentConversationId)
+                setIdConversation(currentConversationId);
+                onConversationCreated(newConv); // <- Aqui está a atualização do user.conversations
 
-            };
 
-            const res = await fetch(`http://localhost:4000/stream?q=${query}&idConversation=${idConversation}&email=${user.email}`);
-            const dataText = await res.text();
-            console.log("Resposta texto completa:", dataText);
+            }
 
-            const reader = res.body?.getReader();
+            const resStream = await fetch(
+                `http://localhost:4000/stream?q=${encodeURIComponent(query)}&idConversation=${currentConversationId}&email=${encodeURIComponent(user.email)}`,
+                { credentials: "include" }
+            );
+
+            if (!resStream.ok) {
+                throw new Error(`Erro ao buscar resposta do stream: status ${resStream.status}`);
+            }
+
+            const reader = resStream.body?.getReader();
+            if (!reader) {
+                throw new Error("Stream não disponível no corpo da resposta");
+            }
+
             const decoder = new TextDecoder("utf-8");
 
             let buffer = "";
-            let responseText = ""
-            let sources: QuerySources[] = []
+            let responseText = "";
+            let sources: QuerySources[] = [];
             let fullStreamLog = "";
 
             while (true) {
-                if (!reader) break;
-
-                const { done, value } = await reader?.read();
+                const { done, value } = await reader.read();
                 if (done) break;
 
                 buffer += decoder.decode(value, { stream: true });
@@ -133,8 +151,8 @@ export default function Chat({ isOpen, user, toggleSidebar, openModal,
                             sources = partialSources;
                         }
                     } catch (err) {
-                        console.error("Erro ao parsear linha", err)
-                        console.log("Linha com erro:", line)
+                        console.error("Erro ao parsear linha do stream:", err);
+                        console.log("Linha com erro:", line);
                     }
                 }
             }
@@ -143,27 +161,25 @@ export default function Chat({ isOpen, user, toggleSidebar, openModal,
 
             if (responseText.trim()) {
                 const htmlAnswer = await marked(responseText);
-
                 setMessages((prev) => [...prev, { content: htmlAnswer, role: "assistant" }]);
-                setAnswer({
-                    answer: htmlAnswer,
-                    sources: sources,
-                });
-            } else { //sem resposta do assistant
+                setAnswer({ answer: htmlAnswer, sources });
+            } else {
                 setMessages((prev) => [
                     ...prev,
                     { content: "Desculpa, não encontrei uma resposta para isso :'(", role: "assistant" },
-                ])
+                ]);
             }
-        } catch (err) { // Erro de rede ou api
+        } catch (err) {
+            console.error("Erro no submitQuery:", err);
             setMessages((prev) => [
                 ...prev,
                 { content: "Erro ao buscar resposta. Tente novamente.", role: "assistant" },
-            ])
+            ]);
         } finally {
             setIsLoading(false);
         }
     };
+
 
     useEffect(() => {
         console.log(answer);
@@ -251,8 +267,8 @@ export default function Chat({ isOpen, user, toggleSidebar, openModal,
             </ChatHeader>
 
             <ChatMessages>
-                <div className="message user">Quanto o governo investiu em educação?</div>
-                <div className="message assistant">Em 2025, foi investido quantos reais em educação?</div>
+                {/* <div className="message user">Quanto o governo investiu em educação?</div>
+                <div className="message assistant">Em 2025, foi investido quantos reais em educação?</div> */}
 
                 {messages.map((msg, index) => (
                     <div key={index} className={`message ${msg.role}`}

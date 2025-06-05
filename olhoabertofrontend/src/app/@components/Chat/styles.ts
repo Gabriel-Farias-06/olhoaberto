@@ -49,13 +49,15 @@ display: flex;
 flex-direction: column;
 flex: 1;
 padding: 20px;
+word-break: keep-all;
+hyphens: auto;
 overflow-y: auto;
 background: var(--bg-chat-messages-color);
 
 .message {
     margin-bottom: 10px;
     padding: 10px 15px;
-    max-width: 60%;
+    max-width: 600px;
     border-radius: 7px;
 
     &.user {
@@ -64,8 +66,10 @@ background: var(--bg-chat-messages-color);
     }
 
     &.assistant {
+        word-break: keep-all;
         background: var(--bg-message-bot-color);
         align-self: flex-start;
+        
     }
 }
 
