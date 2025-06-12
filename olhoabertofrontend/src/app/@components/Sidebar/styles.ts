@@ -75,6 +75,8 @@ overflow-y: auto;
         }
 
         .conversation-chat {
+          display: flex;
+          justify-content: space-between;
           padding: 6px 7px;
           margin-bottom: 1px;
           border-radius: 9px;
@@ -83,6 +85,19 @@ overflow-y: auto;
 
           &:hover{
             background-color: var(--border-color);
+          }
+
+          .conversation-button-delete {
+            background: transparent;
+            color: var(--text-color);
+            border: none;
+            margin-left: 8px;
+            cursor: pointer;
+            transition: 0.1 ease;
+
+            &:hover {
+              color: var(--bg-profile-user-delet-hover);
+            }
           }
         }
 

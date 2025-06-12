@@ -251,11 +251,12 @@ export default function Chat({ isOpen, user, toggleSidebar, openModal, idConvers
                                     <FontAwesomeIcon icon={faGear} className="fa-solid fa-gear" /> Configurar Perfil
                                 </button>
                             </li>
-                            <li className="item admin">
+                            {user?.role === "admin" &&
+                            (<li className="item admin">
                                 <button className="open-modal-btn" onClick={() => openModal("admin")}>
                                     <FontAwesomeIcon icon={faUserGear} className="fa-solid fa-user-gear" /> Administrador
                                 </button>
-                            </li>
+                            </li>)}
                             <li className="item logout">
                                 <button className="open-modal-btn" data-tab="logout" onClick={handleLogout}>
                                     <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" /> Sair

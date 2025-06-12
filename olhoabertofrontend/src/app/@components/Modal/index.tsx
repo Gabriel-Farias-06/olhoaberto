@@ -22,13 +22,12 @@ import {
     ModalSidebar,
     ModalTabContent,
 } from "./styles";
+
 import { marked } from "marked";
 import { useRouter } from 'next/navigation';
 import { UserData } from '@/types/User';
-import ConfirmDeleteUserModal from './ConfirmDeleteUserModal';
-import ConfirmSaveUserModal from './ConfirmSaveUserModal';
-import ConfirmSaveAdminModal from './ConfirmSaveAdminModal';
 
+import ModalConfirm from './ModalConfirm';
 
 interface ModalProps {
     closeModal: () => void;
@@ -39,14 +38,180 @@ interface ModalProps {
 
 
 export default function Modal({ closeModal, user, initialTab }: ModalProps) {
+    const [activeTab, setActiveTab] = useState<"alert" | "profile" | "admin">(initialTab);
+
     const [showConfirmDeleteUser, setShowConfirmDeleteUser] = useState(false);
     const [showConfirmSaveUser, setShowConfirmSaveUser] = useState(false);
     const [showConfirmSaveAdmin, setShowConfirmSaveAdmin] = useState(false);
-
+    const [showConfirmDeleteAllConversations, setShowConfirmDeleteAllConversations] = useState(false);
 
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
-    const [activeTab, setActiveTab] = useState<"alert" | "profile" | "admin">(initialTab);
+    const [userPassword, setUserPassword] = useState("");
+
+    const [instructions, setInstructions] = useState("");
+    const [alertMsg, setAlertMsg] = useState("");
+
+
+    const handleConfirmSaveAdmin = () => {
+        fetch("http://localhost:4000/instructions", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ instructions }),
+        })
+            .then((res) => {
+                if (!res.ok) throw new Error("Erro ao salvar instruções");
+                return res.json();
+            })
+            .then(() => {
+                setShowConfirmSaveAdmin(false);
+                alert("Instruções salvas com sucesso!");
+            })
+            .catch((err) => {
+                console.error(err);
+                alert("Erro ao salvar instruções.");
+            });
+    };
+
+
+    useEffect(() => {
+        if (activeTab === "admin") {
+            fetch("http://localhost:4000/instructions", {
+                method: "GET",
+                credentials: "include",
+            })
+                .then((res) => res.json())
+                .then((data) => setInstructions(data.instructions || ""))
+                .catch((err) => console.error("Erro ao buscar instruções:", err));
+        }
+    }, [activeTab]);
+
+
+    const handleConfirmDeleteUser = async () => {
+        try {
+            const response = await fetch("http://localhost:4000/deleteUser", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({ password: userPassword }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Erro ao deletar conta.");
+            }
+
+            await fetch("http://localhost:4000/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+
+            window.location.reload();
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error("Erro ao deletar conta:", error.message);
+                alert(error.message);
+            }
+        } finally {
+            setShowConfirmDeleteUser(false);
+        }
+    };
+
+    const handleConfirmSaveUser = async () => {
+        const newName = (document.getElementById("username") as HTMLInputElement)?.value;
+        const actualPassword = (document.getElementById("oldpassword") as HTMLInputElement)?.value;
+        const newPassword = (document.getElementById("newpassword") as HTMLInputElement)?.value;
+
+        if (!actualPassword || (!newName && !newPassword)) {
+            alert("Informe a senha atual e pelo menos um novo dado para atualizar.");
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:4000/updateUser", {
+                method: "PUT",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    actualPassword,
+                    newName,
+                    newPassword,
+                }),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message || "Erro ao atualizar o perfil.");
+            }
+
+            const result = await response.json();
+            console.log(result.message);
+
+            setShowConfirmSaveUser(false);
+
+            await fetch("http://localhost:4000/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+
+            window.location.href = "/login";
+        } catch (error) {
+            console.error("Erro ao atualizar perfil:", error);
+            alert("Erro ao atualizar perfil. Verifique sua senha e tente novamente.");
+        }
+    };
+
+
+    const handleConfirmDeleteAllConversations = async () => {
+        try {
+            const response = await fetch("http://localhost:4000/conversations", {
+                method: "DELETE",
+                credentials: "include",
+            });
+
+            const contentType = response.headers.get("content-type") || "";
+
+            if (contentType.includes("application/json")) {
+                const data = await response.json();
+
+                console.log("Status:", response.status);
+                console.log("Response data:", data);
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Erro ao deletar todas as conversas.");
+                }
+            } else {
+                const text = await response.text();
+                console.log("Resposta não JSON:", text);
+
+                if (!response.ok) {
+                    throw new Error(text || "Erro ao deletar todas as conversas.");
+                }
+            }
+
+            setShowConfirmDeleteAllConversations(false);
+            window.location.reload();
+
+        } catch (error) {
+            console.error("Erro ao deletar todas as conversas:", error);
+
+            if (error instanceof Error) {
+                alert(error.message);
+            } else {
+                alert("Ocorreu um erro desconhecido.");
+            }
+        }
+
+    };
+
+
 
     return (
         <ModalOverlay>
@@ -77,11 +242,13 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
                                     <FontAwesomeIcon icon={faGear} className="fa-solid fa-gear" /> Perfil
                                 </button>
                             </li>
-                            <li>
-                                <button className={activeTab === "admin" ? "active" : ""} onClick={() => setActiveTab("admin")} >
-                                    <FontAwesomeIcon icon={faUserGear} className="fa-solid fa-user-gear" /> Admin
-                                </button>
-                            </li>
+                            {user?.role === "admin" && (
+                                <li>
+                                    <button className={activeTab === "admin" ? "active" : ""} onClick={() => setActiveTab("admin")} >
+                                        <FontAwesomeIcon icon={faUserGear} className="fa-solid fa-user-gear" /> Admin
+                                    </button>
+                                </li>
+                            )}
                         </ul>
                     </ModalSidebar>
 
@@ -142,11 +309,6 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
                                     />
                                 </div>
 
-                                {/* <div className="profile-checkbox">
-                                    <input type="checkbox" name="change-password" id="change-password" />
-                                    <label htmlFor="change-password">Desejo alterar a minha senha</label>
-                                </div> */}
-
                                 <label htmlFor="newpassword" className="profile-label">Digite sua nova senha</label>
                                 <div className="profile-input-wrapper">
                                     <input type={showNewPassword ? "text" : "password"} className="profile-input" name="newpassword" id="newpassword" placeholder="Digite sua nova senha..." />
@@ -172,14 +334,45 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
 
                             </form>
 
-                            <div className="profile-delet">
-                                <h2>Deletar sua conta</h2>
-                                <button type="submit" className="profile-button-delet"
+                            <div className="profile-delete-all-conversations">
+                                <h4>Deletar Todas as Conversas</h4>
+                                <button
+                                    type="button"
+                                    className="profile-button-delete-all-conversations"
                                     onClick={(e) => {
-                                            e.preventDefault()
-                                            setShowConfirmDeleteUser(true)
-                                        }} >Excluir Conta</button>
+                                        e.preventDefault();
+                                        setShowConfirmDeleteAllConversations(true);
+                                    }}
+                                >
+                                    Excluir
+                                </button>
                             </div>
+
+                            <form className="profile-delet" onSubmit={(e) => {
+                                e.preventDefault();
+                                setShowConfirmDeleteUser(true);
+                            }}>
+                                <h4>Deletar sua conta</h4>
+
+                                <label htmlFor="delete-password" className="profile-label">
+                                    Digite sua senha para confirmar
+                                </label>
+                                <div className="profile-input-wrapper">
+                                    <input type={showNewPassword ? "text" : "password"} className="profile-input" name="delete-password"
+                                        id="delete-password" placeholder="Digite sua senha..." onChange={(e) => setUserPassword(e.target.value)} />
+                                    <FontAwesomeIcon icon={showNewPassword ? faEyeSlash : faEye} className="fa fa-eye toggle-password"
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                    />
+                                </div>
+
+
+                                <div className="profile-delet-button-wrapper">
+                                    <button type="submit" className="profile-button-delet">
+                                        Excluir
+                                    </button>
+                                </div>
+                            </form>
+
 
                         </div>
 
@@ -189,7 +382,7 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
                             </div>
 
                             <form id="admin-config-form" className="admin-section">
-                                <label htmlFor="max_output_tokens" className="admin-label">Número máximo de tokens</label>
+                                {/* <label htmlFor="max_output_tokens" className="admin-label">Número máximo de tokens</label>
                                 <input
                                     type="number"
                                     className="admin-input"
@@ -237,16 +430,22 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
                                     min="1"
                                     max="100"
                                     required
-                                />
+                                /> */}
 
                                 <label htmlFor="adminDescription" className="admin-label">Instruções para IA</label>
                                 <textarea
-                                    className="admin-input"
+                                    className="admin-input input-textarea"
                                     name="adminDescription"
                                     id="adminDescription"
-                                    placeholder="Descreva as intruções de como a IA deve agir..."
                                     rows={4}
                                     required
+                                    value={instructions}
+                                    onChange={(e) => setInstructions(e.target.value)}
+                                    placeholder={
+                                        instructions.trim() === ""
+                                            ? "Sem instruções para a IA."
+                                            : "Descreva as instruções de como a IA deve agir..."
+                                    }
                                 ></textarea>
 
                                 <div className="admin-buttons">
@@ -267,17 +466,46 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
 
                     </ModalTabContent>
 
-                    {showConfirmDeleteUser && (
-                        <ConfirmDeleteUserModal onClose={() => setShowConfirmDeleteUser(false) } /> 
-                    )}
+                    <ModalConfirm
+                        isOpen={showConfirmDeleteUser}
+                        title="Deletar Conta"
+                        message="Ao confirmar esta ação, sua conta será permanentemente excluída do sistema, incluindo todas as suas informações e preferências. Esta ação não poderá ser desfeita. Tem certeza que deseja continuar?"
+                        confirmText="Excluir"
+                        cancelText="Cancelar"
+                        onConfirm={handleConfirmDeleteUser}
+                        onCancel={() => setShowConfirmDeleteUser(false)}
+                    />
 
-                    {showConfirmSaveUser && (
-                        <ConfirmSaveUserModal onClose={() => setShowConfirmSaveUser(false) } /> 
-                    )}
+                    <ModalConfirm
+                        isOpen={showConfirmSaveUser}
+                        title="Salvar Alterações"
+                        message=" Você está prestes a salvar alterações nas suas configurações de perfil. Isso inclui nome, senha ou os dois. Deseja confirmar essas mudanças?"
+                        confirmText="Salvar"
+                        cancelText="Cancelar"
+                        onConfirm={handleConfirmSaveUser}
+                        onCancel={() => setShowConfirmSaveUser(false)}
+                    />
 
-                    {showConfirmSaveAdmin && (
-                        <ConfirmSaveAdminModal onClose={() => setShowConfirmSaveAdmin(false) } /> 
-                    )}
+                    <ModalConfirm
+                        isOpen={showConfirmSaveAdmin}
+                        title="Salvar Alterações Admin"
+                        message="Ao confirmar, as configurações do modelo de IA serão atualizadas isso muda como funciona as respostas da IA. Tem certeza de que deseja aplicar essas alterações?"
+                        confirmText="Salvar"
+                        cancelText="Cancelar"
+                        onConfirm={handleConfirmSaveAdmin}
+                        onCancel={() => setShowConfirmSaveAdmin(false)}
+                    />
+
+                    <ModalConfirm
+                        isOpen={showConfirmDeleteAllConversations}
+                        title="Deletar Todas as Conversas"
+                        message="Ao confirmar, todas as suas conversas serão permanentemente excluídas. Esta ação não poderá ser desfeita. Tem certeza que deseja continuar?"
+                        confirmText="Excluir Todas"
+                        cancelText="Cancelar"
+                        onConfirm={handleConfirmDeleteAllConversations}
+                        onCancel={() => setShowConfirmDeleteAllConversations(false)}
+                    />
+
 
                 </ModalBody>
 

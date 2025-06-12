@@ -252,38 +252,6 @@ overflow-y: auto;
                 }
             }
 
-            .profile-checkbox {
-                display: flex;
-                align-items: center;
-                margin: 10px 5px 0 5px; 
-
-                input {
-                    appearance: none;
-                    position: relative;
-                    background-color: transparent;
-                    border: 2px solid var(--border-color);
-                    border-radius: 4px;
-                    margin-right: 5px;
-                    width: 16px;
-                    height: 16px;
-                    cursor: pointer;
-                }
-
-                input[type="checkbox"]:checked {
-                    background-color: var(--border-color);
-                }
-                
-                input[type="checkbox"]:checked::after {
-                    content: "✔";
-                    color: white;
-                    font-size: 12px;
-                    position: absolute;
-                    top: -2px;
-                    left: 1px;
-                }
-
-            }
-
             .profile-buttons {
                 display: flex;
                 justify-content: flex-end;
@@ -327,19 +295,20 @@ overflow-y: auto;
                 }
         }
 
-        .profile-delet {
+        .profile-delete-all-conversations {
             display: flex;
+            align-items: center;
             justify-content: space-between;
             border-top: 2px solid var(--border-login-cadastro-color);
-            margin: 30px 0;
+            margin: 30px 0 20px 0;
             padding-top: 20px;
 
-            .profile-button-delet {
+            .profile-button-delete-all-conversations {
                 background-color: var(--bg-profile-user-delet);
                 color: white;
                 font-weight: bold;
                 margin-left: 7px;
-                padding: 0 7px;
+                padding: 5px 7px;
                 border-radius: 16px;
                 cursor: pointer;
                 transition-duration: 0.2s;
@@ -349,6 +318,69 @@ overflow-y: auto;
                 }
             }
 
+
+        }
+
+        
+        .profile-delet {
+            display: flex;
+            flex-direction: column;
+            border-top: 2px solid var(--border-login-cadastro-color);
+            margin: 0px 0 30px 0;
+            padding-top: 20px;
+
+            .profile-label {
+                font-size: 13px;
+                margin: 20px 0 3px 5px ;
+            }
+
+            .profile-input {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+                border: 1px solid var(--border-button-login-cadastro-color);
+                border-radius: 10px;
+                width: 100%;
+                margin: 5px 0 0 0;
+                padding: 10px 7px;
+            }
+
+            .profile-input-wrapper {
+                position: relative;
+    
+                .profile-input {
+                    padding-right: 30px;
+                }
+
+                .toggle-password {
+                    position: absolute;
+                    top: 55%;
+                    right: 13px;
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                }
+            }
+
+            .profile-delet-button-wrapper {
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            .profile-button-delet {
+                background-color: var(--bg-profile-user-delet);
+                color: white;
+                font-weight: bold;
+                margin: 15px 7px 0px 7px;
+                padding: 5px 7px;
+                max-width: 70px;
+                max-height: 28;
+                border-radius: 16px;
+                cursor: pointer;
+                transition-duration: 0.2s;
+
+                &:hover {
+                    background-color: var(--bg-profile-user-delet-hover);
+                }
+            }
 
         }
 
@@ -380,6 +412,10 @@ overflow-y: auto;
                 padding: 10px 7px;
                 resize: none;
                 font-size: 12px;
+            }
+
+            .input-textarea {
+                height: 150px;
             }
 
             .admin-input-wrapper {
@@ -468,7 +504,7 @@ z-index: 999;
 export const ModalContentConfirm = styled.div`
 background-color: var(--bg-color);
 border: 3px solid var(--border-chat-color);
-border-radius: 30px;
+border-radius: 20px;
 display: flex;
 flex-direction: column;
 width: 450px;

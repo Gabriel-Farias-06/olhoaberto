@@ -3,7 +3,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBars,
-  faRightFromBracket
+  faRightFromBracket,
+  faTrash
 } from '@fortawesome/free-solid-svg-icons';
 import {
   faSquarePlus
@@ -20,6 +21,8 @@ import { marked } from "marked";
 import { useRouter } from 'next/navigation';
 import { useLogout } from '@/hooks/userLogout';
 import { Conversation } from '@/types/User';
+
+import ModalConfirm from '../Modal/ModalConfirm';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -40,9 +43,54 @@ export default function Sidebar({
   const router = useRouter();
   const { handleLogout } = useLogout();
 
+  const [showConfirmDeleteConversation, setShowConfirmDeleteConversation] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState<Conversation | null>(null);
+
+  const handleOpenDeleteModal = (conv: Conversation) => {
+    setConversationToDelete(conv);
+    setShowConfirmDeleteConversation(true);
+  };
+
+  const handleConfirmDeleteConversation = async () => {
+    if (!conversationToDelete) return;
+
+    try {
+      const res = await fetch(`http://localhost:4000/conversations/${conversationToDelete._id}`, {
+        method: "DELETE",
+        credentials: "include", // para enviar cookies de sessão
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Erro ao deletar conversa:", errorData.message);
+        return;
+      }
+
+      console.log("Conversa deletada com sucesso!");
+
+      setShowConfirmDeleteConversation(false);
+      setConversationToDelete(null);
+      window.location.reload();
+
+    } catch (err) {
+      console.error("Erro na requisição de deleção:", err);
+    }
+  };
+
+
+
   const renderConversations = () => {
     if (!conversations || conversations.length === 0) {
-      return <p>Nenhuma conversa encontrada.</p>;
+      return (
+        <p style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: '10px',
+          fontSize: '15px'
+        }}
+        >
+          Nenhuma conversa ainda...
+        </p>);
     }
 
     const grouped = groupConversationsByDate(conversations);
@@ -57,13 +105,26 @@ export default function Sidebar({
                 {convs.map((conv) => (
                   <li
                     key={conv._id}
-                    onClick={() => onSelectConversation(conv)}
-                    className={`conversation-chat${conv._id === selectedConversationId ? " active-conversation" : ""}`} 
+                    className={`conversation-chat${conv._id === selectedConversationId ? " active-conversation" : ""}`}
                     title={conv.messages.length > 0 ? conv.messages[0].content : "Sem mensagens"}
                   >
-                    {conv.messages.length > 0
-                      ? conv.messages[0].content.slice(0, 30) + "..."
-                      : "Nova conversa"}
+                    <span
+                      onClick={() => onSelectConversation(conv)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {conv.messages.length > 0
+                        ? conv.messages[0].content.slice(0, 30) + "..."
+                        : "Nova conversa"}
+                    </span>
+
+                    <button
+                      aria-label="Deletar conversa"
+                      onClick={() => handleOpenDeleteModal(conv)}
+                      className="conversation-button-delete"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+
                   </li>
                 ))}
               </ul>
@@ -73,6 +134,7 @@ export default function Sidebar({
       </ul>
     );
   };
+
 
 
   const groupConversationsByDate = (convs: Conversation[]) => {
@@ -105,36 +167,49 @@ export default function Sidebar({
 
 
   return (
-    <SidebarContainer $isOpen={isOpen}>
-      <SidebarHeader>
-        <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
-          <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
-        </button>
+    <>
+      <SidebarContainer $isOpen={isOpen}>
+        <SidebarHeader>
+          <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
+            <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
+          </button>
 
-        <button
-          aria-label="Criar nova conversa"
-          onClick={onNewConversation}
-          style={{ background: "none", border: "none", cursor: "pointer" }}
-        >
-          <FontAwesomeIcon icon={faSquarePlus} className="fa-regular fa-square-plus" />
-        </button>
+          <button
+            aria-label="Criar nova conversa"
+            onClick={onNewConversation}
+            style={{ background: "none", border: "none", cursor: "pointer" }}
+          >
+            <FontAwesomeIcon icon={faSquarePlus} className="fa-regular fa-square-plus" />
+          </button>
 
-      </SidebarHeader>
-      <SidebarChats>
-        <div className="name-user">
-          {userName ? `Bem vindo, ${userName}` : "Carregando..."}
-        </div>
-        <div className="chat-group">
-          {/* <p>Conversas</p> */}
-          {renderConversations()}
-        </div>
-      </SidebarChats>
-      <SidebarFooter>
-        <button className="sidebar-footer-btn" onClick={handleLogout}>
-          <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" />
-          <p>Sair</p>
-        </button>
-      </SidebarFooter>
-    </SidebarContainer>
+        </SidebarHeader>
+        <SidebarChats>
+          <div className="name-user">
+            {userName ? `Bem vindo, ${userName}` : "Carregando..."}
+          </div>
+          <div className="chat-group">
+            {renderConversations()}
+          </div>
+        </SidebarChats>
+        <SidebarFooter>
+          <button className="sidebar-footer-btn" onClick={handleLogout}>
+            <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" />
+            <p>Sair</p>
+          </button>
+        </SidebarFooter>
+      </SidebarContainer>
+
+      <ModalConfirm
+        isOpen={showConfirmDeleteConversation}
+        title="Confirmar exclusão da conversa"
+        message={`Tem certeza que deseja excluir a conversa: "${conversationToDelete?.messages[0]?.content.slice(0, 30)}..."? Lembrando que esta ação é irreversível e não será possível recuperar a conversa.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmDeleteConversation}
+        onCancel={() => setShowConfirmDeleteConversation(false)}
+      />
+
+
+    </>
   );
 };
