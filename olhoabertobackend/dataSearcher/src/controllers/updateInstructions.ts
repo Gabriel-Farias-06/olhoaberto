@@ -14,7 +14,7 @@ export default async (
 
     if (user.role === "user")
       return res.status(401).json({ message: "Acess denied" });
-    await IAConfig.findOneAndUpdate({ instructions }, { upsert: true });
+    await IAConfig.findOneAndUpdate({}, { instructions }, { upsert: true });
     return res
       .status(200)
       .json({ message: "Instructions updated successfully" });

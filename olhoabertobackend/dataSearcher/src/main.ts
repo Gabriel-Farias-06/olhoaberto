@@ -4,7 +4,7 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-import Users from "./infra/db/users.model";
+import { IAConfig, Users } from "@/infra/db";
 
 import {
   loginController,
@@ -15,6 +15,8 @@ import {
   deleteUserController,
   updateUserController,
   addConversation,
+  deleteAllUserConversations,
+  deleteOneConversation
 } from "./controllers";
 import { connectDb } from "./infra/db";
 
@@ -136,7 +138,7 @@ connectDb().then(async () => {
 
     if (!userId) {
       res.status(401).json({ message: "Não autenticado." });
-      return; // para aqui!
+      return; 
     }
 
     const user = await Users.findById(userId).populate({
@@ -148,7 +150,7 @@ connectDb().then(async () => {
 
     if (!user) {
       res.status(404).json({ message: "Usuário não encontrado." });
-      return; // para aqui!
+      return; 
     }
 
     const conversation = user.conversations.find(
@@ -157,12 +159,19 @@ connectDb().then(async () => {
 
     if (!conversation) {
       res.status(404).json({ message: "Conversa não encontrada." });
-      return; // para aqui!
+      return; 
     }
 
-    // Se chegou aqui, tudo ok
+  
     res.status(200).json({ conversation });
   });
+
+
+  app.delete("/conversations", 
+    authenticatedMiddlewareController, deleteAllUserConversations);
+
+  app.delete("/conversations/:conversationId", 
+    authenticatedMiddlewareController, deleteOneConversation);
 
 
 
@@ -182,6 +191,8 @@ connectDb().then(async () => {
     });
   });
 
+
+
   app.put("/updateUser", authenticatedMiddlewareController, (req, res) => {
     const { actualPassword } = req.body || {};
     const { newPassword } = req.body || {};
@@ -196,6 +207,7 @@ connectDb().then(async () => {
     updateUserController(req, res);
   });
 
+
   app.delete("/deleteUser", authenticatedMiddlewareController, (req, res) => {
     const { password } = req.body || {};
     if (!password) {
@@ -204,6 +216,24 @@ connectDb().then(async () => {
     }
 
     deleteUserController(req, res);
+  });
+
+
+
+  app.get("/instructions", authenticatedMiddlewareController, async (req, res) => {
+    const user = req.session.user;
+
+    if (!user || user.role !== "admin") {
+      res.status(403).json({ message: "Acesso negado." });
+    }
+
+    try {
+      const config = await IAConfig.findOne();
+      res.status(200).json({ instructions: config?.instructions || "" });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ message: "Erro ao buscar configurações." });
+    }
   });
 
   app.put("/instructions", authenticatedMiddlewareController, (req, res) => {

@@ -6,3 +6,5 @@ export { default as authenticatedMiddlewareController } from "./authenticatedMid
 export { default as deleteUserController } from "./deleteUserController";
 export { default as updateUserController } from "./updateUserController";
 export { default as addConversation } from "./addConversation";
+export { default as deleteAllUserConversations } from "./deleteAllUserConversations";
+export { default as deleteOneConversation } from "./deleteOneConversation";
