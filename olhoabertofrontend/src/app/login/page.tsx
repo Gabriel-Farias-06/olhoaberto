@@ -53,7 +53,7 @@ export default function Login() {
 
             setTimeout(() => {
                 router.push("/")
-            }, 3000);
+            }, 1000);
 
         } catch (err: any) {
             setMessage(err.message || "Erro ao fazer login");
@@ -92,7 +92,9 @@ export default function Login() {
                                 <a href="http://localhost:3000/cadastro">Não tem uma conta? Clique aqui</a>
                             </p>
                             <div className="login-button-group">
-                                <button type="button" className="login-button cancel">Cancelar</button>
+                                <button type="button" className="login-button cancel"
+                                onClick={() => setFormData({ email: "", password: "" })}>
+                                    Cancelar</button>
                                 <button type="submit" className="login-button enter">Entrar</button>
                             </div>
                         </div>

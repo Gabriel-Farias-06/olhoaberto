@@ -16,7 +16,9 @@ export default async (email: string, password: string, req: Request, res: Respon
     req.session.user = { 
       id: user._id.toString(),
       email: user.email,
-      name: user.name
+      name: user.name,
+      role: user.role,          
+      conversations: user.conversations || []
     };
     return res.status(200).json({ conversations: user.conversations });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

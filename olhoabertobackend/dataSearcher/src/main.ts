@@ -4,6 +4,8 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
+import { IAConfig, Users } from "@/infra/db";
+
 import {
   loginController,
   signUpController,
@@ -13,6 +15,8 @@ import {
   deleteUserController,
   updateUserController,
   addConversation,
+  deleteAllUserConversations,
+  deleteOneConversation
 } from "./controllers";
 import { connectDb } from "./infra/db";
 
@@ -80,8 +84,7 @@ connectDb().then(() => {
     }
   });
 
-  app.post(
-    "/conversations/:userId",
+  app.post("/conversations/:userId",
     authenticatedMiddlewareController,
     (req, res) => {
       const { userId } = req.params;
@@ -92,28 +95,97 @@ connectDb().then(() => {
     }
   );
 
+
   app.post("/signup", (req, res) => {
     const { name, email, password } = req.body;
     signUpController(name, email, password, req, res);
   });
 
-  app.get("/me", (req, res) => {
-    console.info("Cookies recebidos:", req.headers.cookie);
-    console.info("Sessão:", req.session);
+  app.get('/me', async (req, res) => {
+    console.log('Sessão no /me:', req.session.user);
 
     if (req.session?.user?.id) {
       res.status(200).json({
         message: "Authenticated",
         user: {
-          id: req.session.user.id,
+          _id: req.session.user.id,
           name: req.session.user.name,
           email: req.session.user.email,
-        },
+          role: req.session.user.role,
+          conversations: req.session.user.conversations
+        }
       });
     } else {
       res.status(401).json({ message: "Not authenticated" });
     }
   });
+
+
+  app.get("/conversations", authenticatedMiddlewareController, async (req, res) => {
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: "Não autenticado." });
+      return;
+    }
+
+    const user = await Users.findById(userId).populate({
+      path: "conversations",
+      populate: { path: "messages" }
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "Usuário não encontrado." });
+      return;
+    }
+
+    res.status(200).json({ conversations: user.conversations });
+    return;
+  });
+
+
+  app.get("/conversations/:conversationId", authenticatedMiddlewareController, async (req, res) => {
+    const { conversationId } = req.params;
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: "Não autenticado." });
+      return; 
+    }
+
+    const user = await Users.findById(userId).populate({
+      path: "conversations",
+      populate: {
+        path: "messages",
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "Usuário não encontrado." });
+      return; 
+    }
+
+    const conversation = user.conversations.find(
+      (conv) => conv._id === conversationId
+    );
+
+    if (!conversation) {
+      res.status(404).json({ message: "Conversa não encontrada." });
+      return; 
+    }
+
+  
+    res.status(200).json({ conversation });
+  });
+
+
+  app.delete("/conversations", 
+    authenticatedMiddlewareController, deleteAllUserConversations);
+
+  app.delete("/conversations/:conversationId", 
+    authenticatedMiddlewareController, deleteOneConversation);
+
+
 
   app.post("/login", (req, res) => {
     const { email, password } = req.body;
@@ -133,6 +205,8 @@ connectDb().then(() => {
     });
   });
 
+
+
   app.put("/updateUser", authenticatedMiddlewareController, (req, res) => {
     const { actualPassword, newPassword, newName } = req.body;
 
@@ -144,12 +218,31 @@ connectDb().then(() => {
     updateUserController(req, res);
   });
 
+
   app.delete("/deleteUser", authenticatedMiddlewareController, (req, res) => {
     const { password } = req.body;
     if (!password) {
       res.status(400).json({ message: "Password is required" });
     }
     deleteUserController(req, res);
+  });
+
+
+
+  app.get("/instructions", authenticatedMiddlewareController, async (req, res) => {
+    const user = req.session.user;
+
+    if (!user || user.role !== "admin") {
+      res.status(403).json({ message: "Acesso negado." });
+    }
+
+    try {
+      const config = await IAConfig.findOne();
+      res.status(200).json({ instructions: config?.instructions || "" });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ message: "Erro ao buscar configurações." });
+    }
   });
 
   app.put("/instructions", authenticatedMiddlewareController, (req, res) => {

@@ -111,7 +111,9 @@ export default function Cadastro() {
                                 <a href="./login">Já tem uma conta? Clique aqui</a>
                             </p>
                             <div className="cadastro-button-group">
-                                <button type="button" className="cadastro-button cancel">Cancelar</button>
+                                <button type="button" className="cadastro-button cancel"
+                                onClick={() => setFormData({ name: "", email: "", password: "" })}>
+                                    Cancelar</button>
                                 <button type="submit" className="cadastro-button enter">Criar</button>
                             </div>
                         </div>
