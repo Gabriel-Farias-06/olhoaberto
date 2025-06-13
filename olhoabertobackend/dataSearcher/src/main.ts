@@ -17,8 +17,10 @@ import {
   addConversation,
   deleteAllUserConversations,
   deleteOneConversation,
+  createAlertsController,
 } from "./controllers";
 import { connectDb } from "./infra/db";
+import { createServer, Server } from "http";
 
 dotenv.config();
 
@@ -48,6 +50,10 @@ connectDb().then(() => {
       },
     })
   );
+
+  const server = createServer(app);
+  const io = new Server(server);
+  io.listen(process.env.IO_PORT);
 
   app.get("/stream", async (req, res) => {
     const { q: query, email, idConversation } = req.query;
@@ -196,14 +202,11 @@ connectDb().then(() => {
   );
 
   app.post("/login", (req, res) => {
-    console.log("login conroller");
-
     const { email, password } = req.body;
     if (!email || !password) {
       res.status(400).json({ message: "Email and password are required" });
-    } else {
-      loginController(email, password, req, res);
     }
+    loginController(email, password, req, res);
   });
 
   app.post("/logout", (req, res) => {
@@ -264,6 +267,28 @@ connectDb().then(() => {
     const { email } = req.session.user as unknown as any;
     updateInstructions(email, instructions, res);
   });
+
+  app.put("/instructions", authenticatedMiddlewareController, (req, res) => {
+    const { instructions } = req.body;
+    if (!req.session?.user?.email) {
+      res.status(401).json({ message: "User not authenticated." });
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { email } = req.session.user as unknown as any;
+    updateInstructions(email, instructions, res);
+  });
+
+  app.post("/alert", authenticatedMiddlewareController, (req, res) => {
+    const { instructions } = req.body;
+    if (!req.session?.user?.email) {
+      res.status(401).json({ message: "User not authenticated." });
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { email } = req.session.user as unknown as any;
+    updateInstructions(email, instructions, res);
+  });
+
+  app.post("/alert", authenticatedMiddlewareController, createAlertsController);
 
   app.listen(4000, () => {
     console.info("Server is running on http://localhost:4000");
