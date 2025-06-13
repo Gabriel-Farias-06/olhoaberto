@@ -6,7 +6,7 @@ import { Articles, IAConfig, Users } from "@/infra/db";
 async function* streamArticles(
   email: string | undefined,
   query: string,
-  idConversation: string | undefined,
+  idConversation: string | undefined
 ): AsyncGenerator<{ streamArticles: SearchArticlesOutput }> {
   logger(`Searching for: ${query}...`);
 
@@ -20,7 +20,7 @@ async function* streamArticles(
         path: "embedding",
         queryVector,
         numCandidates: 100,
-        limit: 20,
+        limit: 5,
       },
     },
   ]);
@@ -32,21 +32,26 @@ async function* streamArticles(
     path,
     date,
   }));
+  console.log({ articles });
 
   // const config = (await Articles.find({}))[0];
 
   const limitacions = await IAConfig.findOne();
   const stream = llmHub.stream(
-    `Coloque os artigos relacionados a: "${query}" com as seguintes limitações: "${limitacions?.instructions}". 
+    `Coloque os artigos relacionados a: "${query}" com as seguintes limitações: "${
+      limitacions?.instructions
+    }". 
      juntos, separados por titulos em markdown. . Se não há artigos relevantes, retorne "Não foram encontrados artigos relevantes". Não escreva nenhum enunciado. Organize por 
      Artigos: ${JSON.stringify(
-       articles,
-     )}. Saniteze-os também, tirando as tags xml. Conserve todas as informações. Organize em Título, Conteúdo, Data e Documento PDF. `,
+       articles
+     )}. Saniteze-os também, tirando as tags xml. Conserve todas as informações. Organize em Título, Conteúdo, Data e Documento PDF. `
   );
 
   let answer = "";
+
   for await (const chunk of stream) {
     answer += chunk;
+    console.log({ answer });
     yield {
       streamArticles: {
         answer,
@@ -67,7 +72,7 @@ async function* streamArticles(
             ],
           },
         },
-      },
+      }
     );
 }
 
