@@ -1,7 +1,5 @@
-// === CONTROLLER ===
 import { Alerts } from "@/infra/db";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async (req: any, res: any) => {
   const { name, description } = req.body;
 
@@ -12,11 +10,15 @@ export default async (req: any, res: any) => {
   }
 
   try {
-    const alerts = new Alerts({ name, description, user: res.session.user.id });
-    await alerts.save();
-    return res
-      .status(201)
-      .json({ message: "Alerta criado com sucesso.", alert });
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Não autenticado." });
+    }
+
+    const alert = new Alerts({ title: name, description, user: userId }); 
+    await alert.save();
+
+    return res.status(201).json({ message: "Alerta criado com sucesso.", alert });
   } catch (err) {
     console.error("Erro ao criar alerta:", err);
     return res.status(500).json({ message: "Erro interno ao criar alerta." });

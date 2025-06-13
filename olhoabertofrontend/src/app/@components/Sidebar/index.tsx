@@ -29,6 +29,7 @@ interface SidebarProps {
   selectedItemId: string | null;
   onSelectItem: (item: any) => void;
   onNewItem: () => void;
+  openModal: (tab: "alert" | "profile" | "admin") => void;
 }
 
 export default function Sidebar({
@@ -40,26 +41,35 @@ export default function Sidebar({
   onSelectItem,
   onNewItem,
   itemType,
+  openModal,
 }: SidebarProps) {
   const router = useRouter();
   const { handleLogout } = useLogout();
 
-  const [showConfirmDeleteConversation, setShowConfirmDeleteConversation] =
-    useState(false);
-  const [conversationToDelete, setConversationToDelete] =
-    useState<Conversation | null>(null);
+  const [showConfirmDeleteConversation, setShowConfirmDeleteConversation] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState<Conversation | null>(null);
 
-  const handleOpenDeleteModal = (conv: Conversation) => {
-    setConversationToDelete(conv);
+  const [alertToDelete, setAlertToDelete] = useState<Alert | null>(null);
+
+
+  const handleOpenDeleteModal = (item: Conversation | Alert) => {
+    if (itemType === "alert") {
+      setAlertToDelete(item as Alert);
+    } else {
+      setConversationToDelete(item as Conversation);
+    }
     setShowConfirmDeleteConversation(true);
   };
 
+
   const handleConfirmDeleteConversation = async () => {
-    if (!conversationToDelete) return;
+    const itemToDelete = itemType === "alert" ? alertToDelete : conversationToDelete;
+
+    if (!itemToDelete) return;
 
     try {
       const res = await fetch(
-        `http://localhost:4000/items/${conversationToDelete._id}`,
+        `http://localhost:4000/${itemType === "alert" ? "alert" : "items"}/${itemToDelete._id}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -68,18 +78,20 @@ export default function Sidebar({
 
       if (!res.ok) {
         const errorData = await res.json();
-        console.error("Erro ao deletar conversa:", errorData.message);
+        console.error(`Erro ao deletar ${itemType}:`, errorData.message);
         return;
       }
 
-      console.log("Conversa deletada com sucesso!");
+      console.log(`${itemType} deletado com sucesso!`);
       setShowConfirmDeleteConversation(false);
-      setConversationToDelete(null);
+      if (itemType === "alert") setAlertToDelete(null);
+      else setConversationToDelete(null);
       window.location.reload();
     } catch (err) {
       console.error("Erro na requisição de deleção:", err);
     }
   };
+
 
   const groupConversationsByDate = (convs: Conversation[]) => {
     const now = new Date();
@@ -168,16 +180,30 @@ export default function Sidebar({
             <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
           </button>
 
-          <button
-            aria-label="Criar nova conversa"
-            onClick={onNewItem}
-            style={{ background: "none", border: "none", cursor: "pointer" }}
-          >
-            <FontAwesomeIcon
-              icon={faSquarePlus}
-              className="fa-regular fa-square-plus"
-            />
-          </button>
+          {itemType === "alert" ? (
+            <button
+              aria-label="Criar nova conversa"
+              onClick={() => openModal("alert")}
+              style={{ background: "none", border: "none", cursor: "pointer" }}
+            >
+              <FontAwesomeIcon
+                icon={faSquarePlus}
+                className="fa-regular fa-square-plus"
+              />
+            </button>
+          ) : (
+            <button
+              aria-label="Criar nova conversa"
+              onClick={onNewItem}
+              style={{ background: "none", border: "none", cursor: "pointer" }}
+            >
+              <FontAwesomeIcon
+                icon={faSquarePlus}
+                className="fa-regular fa-square-plus"
+              />
+            </button>
+          )
+          }
         </SidebarHeader>
 
         <SidebarChats>
@@ -188,6 +214,21 @@ export default function Sidebar({
                 : `Bem vindo, ${userName}`
               : "Carregando..."}
           </div>
+
+          <div>
+            {itemType === "alert" ? (
+              <button onClick={() => router.push("/")} className="sidebar-nav-button">
+                Voltar para Conversas
+              </button>
+            ) : (
+              <button onClick={() => router.push("/alertas")} className="sidebar-nav-button">
+                Ver seus Alertas
+              </button>
+            )}
+          </div>
+
+
+
           <div className="chat-group">{renderConversations()}</div>
         </SidebarChats>
 
@@ -204,15 +245,20 @@ export default function Sidebar({
 
       <ModalConfirm
         isOpen={showConfirmDeleteConversation}
-        title="Confirmar exclusão da conversa"
-        message={`Tem certeza que deseja excluir a conversa: "${conversationToDelete?.messages[0]?.content.slice(
-          0,
-          30
-        )}..."? Lembrando que esta ação é irreversível e não será possível recuperar a conversa.`}
+        title={`Confirmar exclusão do ${itemType === "alert" ? "alerta" : "conversa"}`}
+        message={
+          itemType === "alert"
+            ? `Tem certeza que deseja excluir o alerta: "${alertToDelete?.title}"? Esta ação é irreversível.`
+            : `Tem certeza que deseja excluir a conversa: "${conversationToDelete?.messages[0]?.content.slice(0, 30)}..."? Esta ação é irreversível.`
+        }
         confirmText="Excluir"
         cancelText="Cancelar"
         onConfirm={handleConfirmDeleteConversation}
-        onCancel={() => setShowConfirmDeleteConversation(false)}
+        onCancel={() => {
+          setShowConfirmDeleteConversation(false);
+          setAlertToDelete(null);
+          setConversationToDelete(null);
+        }}
       />
     </>
   );
@@ -241,12 +287,11 @@ const ItemBox: React.FC<ItemBoxProps> = ({
         {items.map((item: any) => (
           <li
             key={item._id}
-            className={`conversation-chat${
-              item._id === selectedItemId ? " active-conversation" : ""
-            }`}
+            className={`conversation-chat${item._id === selectedItemId ? " active-conversation" : ""
+              }`}
             title={title}
           >
-            <span
+            <span className="conversation-chat-text"
               onClick={() => onSelectItem(item)}
               style={{ cursor: "pointer" }}
             >

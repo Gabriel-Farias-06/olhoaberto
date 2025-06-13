@@ -52,6 +52,7 @@ interface ChatProps {
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   onItemCreated: (item: any) => void;
+  itemType: "conversation" | "alert";
 }
 
 export default function Chat({
@@ -65,6 +66,7 @@ export default function Chat({
   setMessages,
   messages,
   onItemCreated,
+  itemType,
 }: ChatProps) {
   const router = useRouter();
 
@@ -351,6 +353,7 @@ export default function Chat({
         )}
       </ChatMessages>
 
+      { itemType === "alert" ? "" :
       <ChatInput>
         <input
           type="text"
@@ -375,6 +378,7 @@ export default function Chat({
           </div>
         </button>
       </ChatInput>
+      }
     </ChatContainer>
   );
 }

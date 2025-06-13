@@ -9,3 +9,4 @@ export { default as addConversation } from "./addConversation";
 export { default as deleteAllUserConversations } from "./deleteAllUserConversations";
 export { default as deleteOneConversation } from "./deleteOneConversation";
 export { default as createAlertsController } from "./createAlertsController";
+export { default as deleteAlertController } from "./deleteAlertController";
