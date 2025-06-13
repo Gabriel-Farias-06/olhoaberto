@@ -1,8 +1,15 @@
 "use client";
 
 // context/ThemeContext.tsx (ou .js se preferir JS, mas recomendável .ts/.tsx com TS)
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { lightTheme, darkTheme } from "../styles/theme";
+import socket from "@/lib/socket";
 
 // Tipo do valor do contexto
 type ThemeContextType = {
@@ -21,6 +28,23 @@ export const ThemeProviderCustom = ({ children }: { children: ReactNode }) => {
   const toggleTheme = () => setIsDarkMode((prev) => !prev);
 
   const theme = isDarkMode ? darkTheme : lightTheme;
+
+  useEffect(() => {
+    const handleAlert = (data: {
+      userId: string;
+      description: string;
+      resultado: string;
+    }) => {
+      console.log("Received alert:", data);
+      // handle the alert (e.g., show toast, update state, etc.)
+    };
+
+    socket.on("alertResult", handleAlert);
+
+    return () => {
+      socket.off("alertResult", handleAlert); // cleanup
+    };
+  }, []);
 
   return (
     <ThemeToggleContext.Provider value={{ toggleTheme, isDarkMode, theme }}>

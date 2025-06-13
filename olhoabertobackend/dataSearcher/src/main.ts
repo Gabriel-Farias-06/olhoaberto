@@ -21,6 +21,7 @@ import {
 } from "./controllers";
 import { connectDb } from "./infra/db";
 import { createServer, Server } from "http";
+import alertConsumer from "./consumers/alertConsumer";
 
 dotenv.config();
 
@@ -53,7 +54,8 @@ connectDb().then(() => {
 
   const server = createServer(app);
   const io = new Server(server);
-  io.listen(process.env.IO_PORT);
+
+  alertConsumer(io);
 
   app.get("/stream", async (req, res) => {
     const { q: query, email, idConversation } = req.query;
@@ -290,7 +292,7 @@ connectDb().then(() => {
 
   app.post("/alert", authenticatedMiddlewareController, createAlertsController);
 
-  app.listen(4000, () => {
+  server.listen(4000, () => {
     console.info("Server is running on http://localhost:4000");
   });
 });

@@ -2,11 +2,11 @@ import mongoose, { Schema } from "mongoose";
 
 // === ALERT MODEL ===
 const AlertsSchema = new Schema({
-  nome: {
+  title: {
     type: String,
     required: true,
   },
-  descricao: {
+  description: {
     type: String,
     required: true,
   },

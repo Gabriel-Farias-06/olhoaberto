@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Alert, Articles, IAConfig, Notifications } from "@/infra/db";
+import { Alerts, Articles, IAConfig, Notifications } from "@/infra/db";
 import { LLMHub } from "@/infra/llm";
 import { logger } from "@/utils";
 import amqplib from "amqplib";
@@ -17,13 +17,18 @@ export default async (
   channel.consume("newArticles", async (msg: any) => {
     if (msg) {
       logger("Received newArticles event");
+      console.log("MSG: ", msg);
 
-      const alerts = await Alert.find({});
+      const alerts = await Alerts.find({}).lean();
       const llmHub = new LLMHub();
       const config = await IAConfig.findOne();
 
       for (const alert of alerts) {
-        const queryVector = await llmHub.embedQuery(alert.descricao);
+        logger(`Verificando alerta: ${alert.title}`);
+        const queryVector = await llmHub.embedQuery(
+          `${alert.title} ${alert.description}`
+        );
+
         const articles = await Articles.aggregate([
           {
             $vectorSearch: {
@@ -31,36 +36,47 @@ export default async (
               path: "embedding",
               queryVector,
               numCandidates: 100,
-              limit: 20,
+              limit: 10,
             },
           },
         ]);
 
+        logger(`${articles.length} encontrados`);
+
         if (articles.length > 0) {
           const stream = llmHub.stream(
-            `Resuma os artigos relacionados a estritamente a: "${alert.descricao}" com base nas limitações: "${config?.instructions}". Organize em Markdown. Se não houver resultado, retorne nada`
+            `Resuma os artigos relacionados a estritamente a: "${
+              alert.title
+            }: ${alert.description}" com base nas limitações: "${
+              config?.instructions
+            }". Organize em Markdown. Se não houver resultado, retorne nada. Artigos: ${JSON.stringify(
+              articles
+            )}`
           );
 
           let response = "";
           for await (const chunk of stream) {
             response += chunk;
           }
+          console.log({ response });
 
           io.emit("alertResult", {
             userId: alert.user,
-            descricao: alert.descricao,
+            description: alert.description,
             resultado: response,
           });
 
           await Notifications.create({
-            alertaId: alert._id,
-            conteudo: response,
-            data: new Date(),
+            alert: alert._id,
+            content: response,
+            date: new Date(),
+            read: false,
+            name: `${articles.length} Artigos relacionados à ${alert.title} encontrados`,
           });
         }
       }
 
-      channel.ack(msg);
+      // channel.ack(msg);
     }
   });
 };

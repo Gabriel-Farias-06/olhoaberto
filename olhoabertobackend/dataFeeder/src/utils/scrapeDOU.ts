@@ -1,37 +1,40 @@
 import logger from "./logger";
-import runWorker from "../workers/runWorker";
+import { readContent } from "../workers/startDataFetchingByMonth";
+import { BROKER } from "../db/broker";
 
 const months = [
-  "Janeiro",
+  // "Janeiro",
   "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
+  // "Março",
+  // "Abril",
+  // "Maio",
+  // "Junho",
+  // "Julho",
+  // "Agosto",
+  // "Setembro",
+  // "Outubro",
+  // "Novembro",
+  // "Dezembro",
 ];
 
 export default async () => {
   try {
     logger("Scraping DOU...");
-    for (let year = 2002; year <= new Date().getFullYear(); year++) {
-      console.log({ year });
+    for (let year = 2009; year <= 2009; year++) {
+      for (const month of months) {
+        await readContent(year, month);
+        console.log({ year });
+      }
 
-      const promises = Promise.all(
-        months.map((month) =>
-          runWorker("./src/workers/startDataFetchingByMonth.ts", {
-            year,
-            month,
-          })
-        )
-      );
-
-      await promises;
+      if (BROKER.hasNewArticle) {
+        logger("Tem artigos novos, acionando o alerta...");
+        const channel = await BROKER?.value?.createChannel();
+        channel?.assertQueue("newArticles", { durable: true });
+        channel?.sendToQueue(
+          "newArticles",
+          Buffer.from(JSON.stringify({ new: true }))
+        );
+      }
 
       // for (const month of months) {
       //   console.log({ month });

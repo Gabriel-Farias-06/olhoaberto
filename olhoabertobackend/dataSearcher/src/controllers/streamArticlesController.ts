@@ -20,7 +20,7 @@ async function* streamArticles(
         path: "embedding",
         queryVector,
         numCandidates: 100,
-        limit: 5,
+        limit: 10,
       },
     },
   ]);

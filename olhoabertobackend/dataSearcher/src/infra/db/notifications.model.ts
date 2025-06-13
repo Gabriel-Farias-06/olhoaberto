@@ -7,13 +7,17 @@ const NotificationsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  description: {
+  content: {
     type: String,
+    required: true,
+  },
+  date: {
+    type: Date,
     required: true,
   },
   alert: {
     type: Schema.Types.ObjectId,
-    ref: "Alert",
+    ref: "Alerts",
     required: true,
   },
   read: {

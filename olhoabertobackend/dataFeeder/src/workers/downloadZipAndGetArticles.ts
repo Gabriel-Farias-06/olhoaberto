@@ -2,11 +2,12 @@ import axios from "axios";
 import logger from "../utils/logger";
 import { Article, Zip } from "../types";
 import AdmZip from "adm-zip";
-import { workerData } from "worker_threads";
-import { eventEmitter } from "../events";
+// import { eventEmitter } from "../events";
 
 // Função para baixar o ZIP
-async function downloadZip({ href, name }: Zip): Promise<AdmZip> {
+async function downloadZip({ href, name }: Zip, date: string): Promise<AdmZip> {
+  console.log({ href, name });
+
   const response = await axios.get(href, {
     responseType: "stream",
   });
@@ -15,7 +16,7 @@ async function downloadZip({ href, name }: Zip): Promise<AdmZip> {
   const chunks: Buffer[] = [];
 
   logger(
-    `${workerData.date} => ⬇️ Iniciando download: ${name} | ${(
+    `${date} => ⬇️ Iniciando download: ${name} | ${(
       totalSize / 1048576
     ).toFixed(2)}MB`
   );
@@ -24,7 +25,7 @@ async function downloadZip({ href, name }: Zip): Promise<AdmZip> {
     response.data.on("data", (chunk: Buffer) => chunks.push(chunk));
 
     response.data.on("end", () => {
-      logger(`\n✅ Download completo: ${workerData.date}`);
+      logger(`\n✅ Download completo: ${date}`);
       const zipBuffer = Buffer.concat(chunks);
       resolve(new AdmZip(zipBuffer));
     });
@@ -36,15 +37,18 @@ async function downloadZip({ href, name }: Zip): Promise<AdmZip> {
 }
 
 // Função principal do worker
-async function getArticlesFromDownloadedZip(zip: Zip): Promise<Article[]> {
+export async function getArticlesFromDownloadedZip(
+  zip: Zip,
+  date: string
+): Promise<Article[]> {
   const articles: Article[] = [];
-  const zipFile = await downloadZip(zip);
-  const { date } = workerData;
+  const zipFile = await downloadZip(zip, date);
 
   // pega arquivos xml
-  const entries = zipFile
-    .getEntries()
-    .filter((entry) => entry.entryName.endsWith(".xml"));
+  // redução proposital
+  const entries = [
+    zipFile.getEntries().filter((entry) => entry.entryName.endsWith(".xml"))[0],
+  ];
 
   logger(`🔄 ${date} => 📂 Lendo ZIP: ${zip.name}`);
   for (const { entryName, getData } of entries) {
@@ -64,17 +68,19 @@ async function getArticlesFromDownloadedZip(zip: Zip): Promise<Article[]> {
   return articles;
 }
 
-(async () => {
-  const { zip, date } = workerData;
-  try {
-    const articles = await getArticlesFromDownloadedZip(zip);
-    logger(
-      `🔄 ${date} => Salvando ${articles.length} artigos no Banco de Dados`
-    );
-    articles.forEach((article) =>
-      eventEmitter.emit("saveArticles", { article })
-    );
-  } catch (error) {
-    logger(`${date} => ${(error as Error).message}`);
-  }
-})();
+// (async () => {
+//   const { zip, date } = workerData;
+//   console.log({ zip, date });
+
+//   try {
+//     const articles = await getArticlesFromDownloadedZip(zip);
+//     logger(
+//       `🔄 ${date} => Salvando ${articles.length} artigos no Banco de Dados`
+//     );
+//     articles.forEach((article) =>
+//       eventEmitter.emit("saveArticles", { article })
+//     );
+//   } catch (error) {
+//     logger(`${date} => ${(error as Error).message}`);
+//   }
+// })();
