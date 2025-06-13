@@ -18,6 +18,7 @@ import {
   deleteAllUserConversations,
   deleteOneConversation,
   createAlertsController,
+  deleteAlertController,
 } from "./controllers";
 import { connectDb } from "./infra/db";
 import { createServer, Server } from "http";
@@ -162,96 +163,90 @@ connectDb().then(() => {
       return;
     }
 
-    const alerts = await Alerts.find({}).lean();
+    try {
+      const alerts = await Alerts.find({ user: userId }).lean();
 
-    if (!alerts) {
+      res.status(200).json({ alerts });
+    } catch (err) {
+      console.error("Erro ao buscar alertas:", err);
+      res.status(500).json({ message: "Erro ao buscar alertas." });
+    }
+
+    
+  });
+
+
+  app.get("/alerts/:id", authenticatedMiddlewareController, async (req, res) => {
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: "Não autenticado." });
+    }
+
+    const alertId = req.params.id;
+
+    try {
+      const alert = await Alerts.findOne({ _id: alertId, user: userId }).lean();
+
+      if (!alert) {
+        res.status(404).json({ message: "Alerta não encontrado." });
+      }
+
+      res.status(200).json({ alert });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Erro ao buscar alerta." });
+    }
+  });
+
+  app.post("/alert", authenticatedMiddlewareController, createAlertsController);
+
+  app.delete("/alert/:id", authenticatedMiddlewareController, deleteAlertController);
+
+
+
+
+
+  app.get("/conversations/:conversationId", authenticatedMiddlewareController, async (req, res) => {
+    const { conversationId } = req.params;
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: "Não autenticado." });
+      return;
+    }
+
+    const user = await Users.findById(userId).populate({
+      path: "conversations",
+      populate: {
+        path: "messages",
+      },
+    });
+
+    if (!user) {
       res.status(404).json({ message: "Usuário não encontrado." });
       return;
     }
 
-    res.status(200).json({ alerts });
-    return;
-  });
+    const conversation = user.conversations.find(
+      (conv) => conv._id === conversationId
+    );
 
-  // app.get(
-  //   "/alerts/:alertId",
-  //   authenticatedMiddlewareController,
-  //   async (req, res) => {
-  //     const { alertId } = req.params;
-
-  //     const user = await Users(userId).populate({
-  //       path: "conversations",
-  //       populate: {
-  //         path: "messages",
-  //       },
-  //     });
-
-  //     if (!user) {
-  //       res.status(404).json({ message: "Usuário não encontrado." });
-  //       return;
-  //     }
-
-  //     const conversation = user.conversations.find(
-  //       (conv) => conv._id === conversationId
-  //     );
-
-  //     if (!conversation) {
-  //       res.status(404).json({ message: "Conversa não encontrada." });
-  //       return;
-  //     }
-
-  //     res.status(200).json({ conversation });
-  //   }
-  // );
-
-  app.get(
-    "/conversations/:conversationId",
-    authenticatedMiddlewareController,
-    async (req, res) => {
-      const { conversationId } = req.params;
-      const userId = req.session.user?.id;
-
-      if (!userId) {
-        res.status(401).json({ message: "Não autenticado." });
-        return;
-      }
-
-      const user = await Users.findById(userId).populate({
-        path: "conversations",
-        populate: {
-          path: "messages",
-        },
-      });
-
-      if (!user) {
-        res.status(404).json({ message: "Usuário não encontrado." });
-        return;
-      }
-
-      const conversation = user.conversations.find(
-        (conv) => conv._id === conversationId
-      );
-
-      if (!conversation) {
-        res.status(404).json({ message: "Conversa não encontrada." });
-        return;
-      }
-
-      res.status(200).json({ conversation });
+    if (!conversation) {
+      res.status(404).json({ message: "Conversa não encontrada." });
+      return;
     }
+
+    res.status(200).json({ conversation });
+  }
   );
 
-  app.delete(
-    "/conversations",
-    authenticatedMiddlewareController,
-    deleteAllUserConversations
-  );
+  app.delete("/conversations", authenticatedMiddlewareController, deleteAllUserConversations);
 
-  app.delete(
-    "/conversations/:conversationId",
-    authenticatedMiddlewareController,
-    deleteOneConversation
-  );
+  app.delete("/conversations/:conversationId", authenticatedMiddlewareController, deleteOneConversation);
+
+
+
 
   app.post("/login", (req, res) => {
     const { email, password } = req.body;
@@ -290,24 +285,25 @@ connectDb().then(() => {
     deleteUserController(req, res);
   });
 
-  app.get(
-    "/instructions",
-    authenticatedMiddlewareController,
-    async (req, res) => {
-      const user = req.session.user;
 
-      if (!user || user.role !== "admin") {
-        res.status(403).json({ message: "Acesso negado." });
-      }
 
-      try {
-        const config = await IAConfig.findOne();
-        res.status(200).json({ instructions: config?.instructions || "" });
-      } catch (e) {
-        console.error(e);
-        res.status(500).json({ message: "Erro ao buscar configurações." });
-      }
+
+
+  app.get("/instructions", authenticatedMiddlewareController, async (req, res) => {
+    const user = req.session.user;
+
+    if (!user || user.role !== "admin") {
+      res.status(403).json({ message: "Acesso negado." });
     }
+
+    try {
+      const config = await IAConfig.findOne();
+      res.status(200).json({ instructions: config?.instructions || "" });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ message: "Erro ao buscar configurações." });
+    }
+  }
   );
 
   app.put("/instructions", authenticatedMiddlewareController, (req, res) => {
@@ -319,28 +315,6 @@ connectDb().then(() => {
     const { email } = req.session.user as unknown as any;
     updateInstructions(email, instructions, res);
   });
-
-  app.put("/instructions", authenticatedMiddlewareController, (req, res) => {
-    const { instructions } = req.body;
-    if (!req.session?.user?.email) {
-      res.status(401).json({ message: "User not authenticated." });
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { email } = req.session.user as unknown as any;
-    updateInstructions(email, instructions, res);
-  });
-
-  app.post("/alert", authenticatedMiddlewareController, (req, res) => {
-    const { instructions } = req.body;
-    if (!req.session?.user?.email) {
-      res.status(401).json({ message: "User not authenticated." });
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { email } = req.session.user as unknown as any;
-    updateInstructions(email, instructions, res);
-  });
-
-  app.post("/alert", authenticatedMiddlewareController, createAlertsController);
 
   server.listen(4000, () => {
     console.info("Server is running on http://localhost:4000");

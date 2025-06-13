@@ -1,0 +1,33 @@
+# Node modules e lockfiles
+node_modules/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Next.js build output
+.next/
+out/
+
+# Environment variables
+**/*.env
+!.example-env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+docker-compose.override.yml
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Outros arquivos temporários
+*.swp
+*.swo

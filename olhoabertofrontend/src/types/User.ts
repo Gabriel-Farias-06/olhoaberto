@@ -31,4 +31,10 @@ export type Alert = {
   title: string;
   description: string;
   user: string;
+  results: {
+    date: string;
+    answer: string;
+    read?: boolean;
+  }[];
 };
+

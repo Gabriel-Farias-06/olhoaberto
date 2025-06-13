@@ -43,9 +43,30 @@ padding: 15px 0px;
 overflow-y: auto;
 
 .name-user {
-    padding: 5px 5px;
-    font-size: 20px;
-    font-weight: bold;
+  text-align: center;
+  width: 100%;
+  padding: 5px 5px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.sidebar-nav-button {
+  background-color: var(--bg-sidebar-color);
+  color: var(--text-color);
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 5px;
+  padding: 5px 0px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition-duration: 0.2s;
+
+  &:hover {
+      background-color: var(--text-color);
+      color: var(--bg-color);
+  }
+
 }
 
 .chat-group {
@@ -77,6 +98,7 @@ overflow-y: auto;
         .conversation-chat {
           display: flex;
           justify-content: space-between;
+          align-items: center;
           padding: 6px 7px;
           margin-bottom: 1px;
           border-radius: 9px;
@@ -85,6 +107,13 @@ overflow-y: auto;
 
           &:hover{
             background-color: var(--border-color);
+          }
+
+          .conversation-chat-text {
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
           }
 
           .conversation-button-delete {

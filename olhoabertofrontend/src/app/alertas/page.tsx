@@ -38,28 +38,39 @@ export default function Alertas() {
 
   const handleSelectAlert = async (item: Alert) => {
     try {
-      // const res = await fetch(`http://localhost:4000/alerts/${item._id}`, {
-      //   credentials: "include",
-      // });
+      const res = await fetch(`http://localhost:4000/alerts/${item._id}`, {
+        method: "GET",
+        credentials: "include",
+      });
 
-      // if (!res.ok) {
-      //   const errorText = await res.text();
-      //   throw new Error(
-      //     `Erro ao carregar conversa: ${res.status} - ${errorText}`
-      //   );
-      // }
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(
+          `Erro ao carregar alerta: ${res.status} - ${errorText}`
+        );
+      }
 
       const _selectedAlert = alerts.find((alert) => alert._id === item._id);
-      if (_selectedAlert) {
-        setSelectedAlert(_selectedAlert);
-        setIdAlert(_selectedAlert._id);
-        // setMessages(_selectedAlert.alert.conversation.messages);
-        setSelectedAlertId(_selectedAlert._id);
-      } else throw new Error("Id não encotrado");
+      if (!_selectedAlert) {
+        throw new Error("ID do alerta não encontrado.");
+      }
+
+      setSelectedAlert(_selectedAlert);
+      setIdAlert(_selectedAlert._id);
+      setSelectedAlertId(_selectedAlert._id);
+
+      const convertedMessages: Message[] = _selectedAlert.results.map((res) => ({
+        role: "assistant",
+        content: res.answer,
+      }));
+      setMessages(convertedMessages);
+
+      console.log("Selecionado:", _selectedAlert);
     } catch (err) {
-      console.error("Erro ao carregar conversa completa:", err);
+      console.error("Erro ao carregar alerta:", err);
     }
   };
+
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -119,6 +130,7 @@ export default function Alertas() {
             selectedItemId={selectedAlertId}
             onSelectItem={handleSelectAlert}
             onNewItem={handleNewAlert}
+            openModal={openModal}
           />
 
           <Chat
@@ -132,6 +144,7 @@ export default function Alertas() {
             setMessages={setMessages}
             messages={messages}
             onItemCreated={handleAlertCreated}
+            itemType="alert"
           />
 
           {showModal && (

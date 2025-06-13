@@ -1,0 +1,4 @@
+RBTMQ_BROKER=amqp://localhost:5672
+MONGO_DB_URL=mongodb+srv://User:Password@clusterAddNumber.YourCode.mongodb.net/?retryWrites=true&w=majority&appName=ClusterAddNumber
+PORTAL_TRANSPARENCIA_TOKEN=
+GEMINI_API_KEY=

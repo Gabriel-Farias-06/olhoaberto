@@ -45,6 +45,10 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
     const [showConfirmSaveAdmin, setShowConfirmSaveAdmin] = useState(false);
     const [showConfirmDeleteAllConversations, setShowConfirmDeleteAllConversations] = useState(false);
 
+    const [showConfirmCreateAlert, setShowConfirmCreateAlert] = useState(false);
+    const [alertName, setAlertName] = useState("");
+    const [alertDescription, setAlertDescription] = useState("");
+
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [userPassword, setUserPassword] = useState("");
@@ -89,6 +93,48 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
         }
     }, [activeTab]);
 
+    const handleConfirmCreateAlert = async () => {
+        try {
+            const form = document.getElementById("alert-create-form") as HTMLFormElement;
+            const formData = new FormData(form);
+
+            const name = formData.get("alertName")?.toString().trim() || "";
+            const description = formData.get("alertDescription")?.toString().trim() || "";
+
+            console.log("name:", name);
+            console.log("description:", description);
+
+            if (!name || !description) {
+                alert("Preencha todos os campos.");
+                return;
+            }
+
+            const response = await fetch("http://localhost:4000/alert", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, description }), // <-- aqui é "name"
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Erro ao criar alerta.");
+            }
+
+            setShowConfirmCreateAlert(false);
+            alert("Alerta criado com sucesso!");
+            closeModal();
+            window.location.reload();
+        } catch (error) {
+            console.error("Erro ao criar alerta:", error);
+            if (error instanceof Error) {
+                alert(error.message);
+            } else {
+                alert("Erro desconhecido ao criar alerta.");
+            }
+        }
+    };
 
     const handleConfirmDeleteUser = async () => {
         try {
@@ -282,7 +328,11 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
                                 <div className="alert-buttons">
                                     <button type="button" className="alert-button cancel" onClick={closeModal}>
                                         Cancelar</button>
-                                    <button type="submit" className="alert-button create">Criar</button>
+                                    <button type="submit" className="alert-button create"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            setShowConfirmCreateAlert(true)
+                                        }}>Criar</button>
                                 </div>
 
                                 <footer className="alert-footer">
@@ -465,6 +515,16 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
                         </div>
 
                     </ModalTabContent>
+
+                    <ModalConfirm
+                        isOpen={showConfirmCreateAlert}
+                        title="Criar Alerta"
+                        message=" Você está prestes a criar um alerta. Deseja confirmar a criação deste alerta?"
+                        confirmText="Criar"
+                        cancelText="Cancelar"
+                        onConfirm={handleConfirmCreateAlert}
+                        onCancel={() => setShowConfirmCreateAlert(false)}
+                    />
 
                     <ModalConfirm
                         isOpen={showConfirmDeleteUser}

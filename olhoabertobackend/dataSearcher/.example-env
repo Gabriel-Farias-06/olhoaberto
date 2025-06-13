@@ -1,0 +1,9 @@
+RBTMQ_BROKER=amqp://localhost:5672
+# IO_PORT=ws://localhost:5672
+
+MONGO_DB_URL=mongodb+srv://User:Password@clusterAddNumber.YourCode.mongodb.net/?retryWrites=true&w=majority&appName=ClusterAddNumber
+GEMINI_API_KEY=
+VECTOR_INDEX=vector_index
+
+JWT_SECRET=
+SESSION_SECRET=
