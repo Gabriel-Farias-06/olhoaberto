@@ -127,6 +127,15 @@ Isso irá construir as imagens e iniciar os serviços (backend, frontend e Ngrok
 
 ### Rodar Localmente (Sem Docker)
 
+> ⚠️ Caso seja a primeira vez que você rode o projeto, execute primeiro o **dataFeeder** para baixar e salvar os arquivos no banco de dados.
+
+#### No dataFeeder (`olhoabertobackend/dataFeeder`):
+
+```bash
+npm install
+npm run start ou npm run dev
+```
+
 1. No backend (`olhoabertobackend/dataSearcher`):
 
 ```bash
