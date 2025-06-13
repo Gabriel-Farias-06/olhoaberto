@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Alerts, Articles, IAConfig, Notifications } from "@/infra/db";
+import { Alerts, Articles, IAConfig } from "@/infra/db";
 import { LLMHub } from "@/infra/llm";
 import { logger } from "@/utils";
 import amqplib from "amqplib";
@@ -19,7 +19,7 @@ export default async (
       logger("Received newArticles event");
       console.log("MSG: ", msg);
 
-      const alerts = await Alerts.find({}).lean();
+      const alerts = await Alerts.find({});
       const llmHub = new LLMHub();
       const config = await IAConfig.findOne();
 
@@ -66,17 +66,18 @@ export default async (
             resultado: response,
           });
 
-          await Notifications.create({
-            alert: alert._id,
-            content: response,
-            date: new Date(),
-            read: false,
-            name: `${articles.length} Artigos relacionados à ${alert.title} encontrados`,
-          });
+          const newResult = {
+            date: new Date().toISOString(),
+            answer: response,
+            read: false, // opcional
+          };
+
+          alert.results.push(newResult);
+          await alert.save();
         }
       }
 
-      // channel.ack(msg);
+      channel.ack(msg);
     }
   });
 };

@@ -26,7 +26,7 @@ import {
 import { marked } from "marked";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
-import { UserData, Conversation } from "@/types/User";
+import { UserData, Conversation, Alert } from "@/types/User";
 import { useLogout } from "@/hooks/userLogout";
 import { Message } from "@/types/User";
 
@@ -46,12 +46,12 @@ interface ChatProps {
   user: UserData;
   toggleSidebar: () => void;
   openModal: (tab: "alert" | "profile" | "admin") => void;
-  idConversation: string | null;
-  setIdConversation: React.Dispatch<React.SetStateAction<string | null>>;
-  selectedConversation: Conversation | null;
+  idItem: string | null;
+  setIdItem: React.Dispatch<React.SetStateAction<string | null>>;
+  selectedItem: Conversation | null | Alert;
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-  onConversationCreated: (conv: Conversation) => void;
+  onItemCreated: (item: any) => void;
 }
 
 export default function Chat({
@@ -59,12 +59,12 @@ export default function Chat({
   user,
   toggleSidebar,
   openModal,
-  idConversation,
-  setIdConversation,
-  selectedConversation,
+  idItem,
+  setIdItem,
+  selectedItem,
   setMessages,
   messages,
-  onConversationCreated,
+  onItemCreated,
 }: ChatProps) {
   const router = useRouter();
 
@@ -90,7 +90,7 @@ export default function Chat({
     setQuery("");
 
     try {
-      let currentConversationId = idConversation;
+      let currentConversationId = idItem;
 
       console.log("Tentando criar conversa para o user:", user);
       if (!currentConversationId) {
@@ -116,14 +116,14 @@ export default function Chat({
         }
 
         currentConversationId = newConv._id;
-        setIdConversation(currentConversationId);
-        onConversationCreated(newConv); // <- Aqui está a atualização do user.conversations
+        setIdItem(currentConversationId);
+        onItemCreated(newConv); // <- Aqui está a atualização do user.conversations
       }
 
       const resStream = await fetch(
         `http://localhost:4000/stream?q=${encodeURIComponent(
           query
-        )}&idConversation=${currentConversationId}&email=${encodeURIComponent(
+        )}&idItem=${currentConversationId}&email=${encodeURIComponent(
           user.email
         )}`,
         { credentials: "include" }

@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose";
 
 // === ALERT MODEL ===
 const NotificationsSchema = new mongoose.Schema({
-  name: {
+  title: {
     type: String,
     required: true,
   },

@@ -1,50 +1,53 @@
 "use client";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
   faRightFromBracket,
-  faTrash
-} from '@fortawesome/free-solid-svg-icons';
-import {
-  faSquarePlus
-} from '@fortawesome/free-regular-svg-icons';
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
 
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import {
   SidebarContainer,
   SidebarHeader,
   SidebarChats,
   SidebarFooter,
 } from "./styles";
-import { marked } from "marked";
-import { useRouter } from 'next/navigation';
-import { useLogout } from '@/hooks/userLogout';
-import { Conversation } from '@/types/User';
-
-import ModalConfirm from '../Modal/ModalConfirm';
+import { useRouter } from "next/navigation";
+import { useLogout } from "@/hooks/userLogout";
+import { Alert, Conversation } from "@/types/User";
+import ModalConfirm from "../Modal/ModalConfirm";
 
 interface SidebarProps {
   isOpen: boolean;
+  itemType: "conversation" | "alert";
   toggleSidebar: () => void;
   userName: string;
-  conversations: Conversation[];
-  selectedConversationId: string | null;
-  onSelectConversation: (conversation: Conversation) => void;
-  onNewConversation: () => void;
+  items: Conversation[] | Alert[];
+  selectedItemId: string | null;
+  onSelectItem: (item: any) => void;
+  onNewItem: () => void;
 }
 
-
 export default function Sidebar({
-  isOpen, toggleSidebar, userName, conversations,
-  selectedConversationId, onSelectConversation, onNewConversation
+  isOpen,
+  toggleSidebar,
+  userName,
+  items,
+  selectedItemId,
+  onSelectItem,
+  onNewItem,
+  itemType,
 }: SidebarProps) {
-
   const router = useRouter();
   const { handleLogout } = useLogout();
 
-  const [showConfirmDeleteConversation, setShowConfirmDeleteConversation] = useState(false);
-  const [conversationToDelete, setConversationToDelete] = useState<Conversation | null>(null);
+  const [showConfirmDeleteConversation, setShowConfirmDeleteConversation] =
+    useState(false);
+  const [conversationToDelete, setConversationToDelete] =
+    useState<Conversation | null>(null);
 
   const handleOpenDeleteModal = (conv: Conversation) => {
     setConversationToDelete(conv);
@@ -55,10 +58,13 @@ export default function Sidebar({
     if (!conversationToDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:4000/conversations/${conversationToDelete._id}`, {
-        method: "DELETE",
-        credentials: "include", // para enviar cookies de sessão
-      });
+      const res = await fetch(
+        `http://localhost:4000/items/${conversationToDelete._id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -67,88 +73,21 @@ export default function Sidebar({
       }
 
       console.log("Conversa deletada com sucesso!");
-
       setShowConfirmDeleteConversation(false);
       setConversationToDelete(null);
       window.location.reload();
-
     } catch (err) {
       console.error("Erro na requisição de deleção:", err);
     }
   };
 
-
-
-  const renderConversations = () => {
-    if (!conversations || conversations.length === 0) {
-      return (
-        <p style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginTop: '10px',
-          fontSize: '15px'
-        }}
-        >
-          Nenhuma conversa ainda...
-        </p>);
-    }
-
-    const grouped = groupConversationsByDate(conversations);
-
-    return (
-      <ul className="conversation-list">
-        {Object.entries(grouped).map(([section, convs]) =>
-          convs.length > 0 ? (
-            <li className="conversation-group" key={section}>
-              <p className={`conversation-title`}>{section}</p>
-              <ul>
-                {convs.map((conv) => (
-                  <li
-                    key={conv._id}
-                    className={`conversation-chat${conv._id === selectedConversationId ? " active-conversation" : ""}`}
-                    title={conv.messages.length > 0 ? conv.messages[0].content : "Sem mensagens"}
-                  >
-                    <span
-                      onClick={() => onSelectConversation(conv)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {conv.messages.length > 0
-                        ? conv.messages[0].content.slice(0, 30) + "..."
-                        : "Nova conversa"}
-                    </span>
-
-                    <button
-                      aria-label="Deletar conversa"
-                      onClick={() => handleOpenDeleteModal(conv)}
-                      className="conversation-button-delete"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ) : null
-        )}
-      </ul>
-    );
-  };
-
-
-
   const groupConversationsByDate = (convs: Conversation[]) => {
-    const today: Record<string, Conversation[]> = {};
-    const yesterday: Record<string, Conversation[]> = {};
-    const last7Days: Record<string, Conversation[]> = {};
-    const last30Days: Record<string, Conversation[]> = {};
-
     const now = new Date();
     const result = {
       Hoje: [] as Conversation[],
       Ontem: [] as Conversation[],
       "Últimos 7 dias": [] as Conversation[],
-      "Últimos 30 dias": [] as Conversation[]
+      "Últimos 30 dias": [] as Conversation[],
     };
 
     convs.forEach((conv) => {
@@ -165,35 +104,99 @@ export default function Sidebar({
     return result;
   };
 
+  const renderConversations = () => {
+    if (!items || items.length === 0) {
+      return (
+        <p
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "10px",
+            fontSize: "15px",
+          }}
+        >
+          {itemType === "alert"
+            ? "Nenhum alerta cadastrado"
+            : "Nenhuma conversa ainda..."}
+        </p>
+      );
+    }
+
+    if (itemType === "alert") {
+      return (
+        <ul className="conversation-list">
+          <ItemBox
+            title="Alertas"
+            items={items}
+            selectedItemId={selectedItemId as string}
+            onSelectItem={onSelectItem}
+            handleOpenDeleteModal={handleOpenDeleteModal}
+          />
+        </ul>
+      );
+    }
+
+    const grouped = groupConversationsByDate(items as Conversation[]);
+
+    return (
+      <ul className="conversation-list">
+        {Object.entries(grouped).map(([section, convs]) =>
+          convs.length > 0 ? (
+            <ItemBox
+              key={section}
+              title={section}
+              items={convs}
+              selectedItemId={selectedItemId as string}
+              onSelectItem={onSelectItem}
+              handleOpenDeleteModal={handleOpenDeleteModal}
+            />
+          ) : null
+        )}
+      </ul>
+    );
+  };
 
   return (
     <>
       <SidebarContainer $isOpen={isOpen}>
         <SidebarHeader>
-          <button className="mode-open-close" aria-label="Alterar modo aberto/fechado" onClick={toggleSidebar}>
+          <button
+            className="mode-open-close"
+            aria-label="Alterar modo aberto/fechado"
+            onClick={toggleSidebar}
+          >
             <FontAwesomeIcon icon={faBars} className="fa-solid fa-bars" />
           </button>
 
           <button
             aria-label="Criar nova conversa"
-            onClick={onNewConversation}
+            onClick={onNewItem}
             style={{ background: "none", border: "none", cursor: "pointer" }}
           >
-            <FontAwesomeIcon icon={faSquarePlus} className="fa-regular fa-square-plus" />
+            <FontAwesomeIcon
+              icon={faSquarePlus}
+              className="fa-regular fa-square-plus"
+            />
           </button>
-
         </SidebarHeader>
+
         <SidebarChats>
           <div className="name-user">
-            {userName ? `Bem vindo, ${userName}` : "Carregando..."}
+            {userName
+              ? itemType === "alert"
+                ? "Seus alertas"
+                : `Bem vindo, ${userName}`
+              : "Carregando..."}
           </div>
-          <div className="chat-group">
-            {renderConversations()}
-          </div>
+          <div className="chat-group">{renderConversations()}</div>
         </SidebarChats>
+
         <SidebarFooter>
           <button className="sidebar-footer-btn" onClick={handleLogout}>
-            <FontAwesomeIcon icon={faRightFromBracket} className="fa-solid fa-right-from-bracket" />
+            <FontAwesomeIcon
+              icon={faRightFromBracket}
+              className="fa-solid fa-right-from-bracket"
+            />
             <p>Sair</p>
           </button>
         </SidebarFooter>
@@ -202,14 +205,66 @@ export default function Sidebar({
       <ModalConfirm
         isOpen={showConfirmDeleteConversation}
         title="Confirmar exclusão da conversa"
-        message={`Tem certeza que deseja excluir a conversa: "${conversationToDelete?.messages[0]?.content.slice(0, 30)}..."? Lembrando que esta ação é irreversível e não será possível recuperar a conversa.`}
+        message={`Tem certeza que deseja excluir a conversa: "${conversationToDelete?.messages[0]?.content.slice(
+          0,
+          30
+        )}..."? Lembrando que esta ação é irreversível e não será possível recuperar a conversa.`}
         confirmText="Excluir"
         cancelText="Cancelar"
         onConfirm={handleConfirmDeleteConversation}
         onCancel={() => setShowConfirmDeleteConversation(false)}
       />
-
-
     </>
+  );
+}
+
+// === ItemBox COMPONENT ===
+interface ItemBoxProps {
+  title: string;
+  items: any[];
+  selectedItemId: string;
+  onSelectItem: (item: any) => void;
+  handleOpenDeleteModal: (item: any) => void;
+}
+
+const ItemBox: React.FC<ItemBoxProps> = ({
+  title,
+  items,
+  onSelectItem,
+  selectedItemId,
+  handleOpenDeleteModal,
+}) => {
+  return (
+    <li className="conversation-group" key={title}>
+      <p className="conversation-title">{title}</p>
+      <ul>
+        {items.map((item: any) => (
+          <li
+            key={item._id}
+            className={`conversation-chat${
+              item._id === selectedItemId ? " active-conversation" : ""
+            }`}
+            title={title}
+          >
+            <span
+              onClick={() => onSelectItem(item)}
+              style={{ cursor: "pointer" }}
+            >
+              {"messages" in item && item.messages.length > 0
+                ? item.messages[0].content.slice(0, 30) + "..."
+                : item.title || "Nova conversa"}
+            </span>
+
+            <button
+              aria-label="Deletar"
+              onClick={() => handleOpenDeleteModal(item)}
+              className="conversation-button-delete"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </li>
   );
 };

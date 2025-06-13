@@ -11,10 +11,25 @@ const AlertsSchema = new Schema({
     required: true,
   },
   user: {
-    type: Schema.Types.ObjectId,
-    ref: "Users",
+    type: String,
     required: true,
   },
+  results: [
+    {
+      date: {
+        type: String,
+        required: true,
+      },
+      answer: {
+        type: String,
+        required: true,
+      },
+      read: {
+        type: Boolean,
+        required: false,
+      },
+    },
+  ],
 });
 
 const Alerts = mongoose.model("Alerts", AlertsSchema);

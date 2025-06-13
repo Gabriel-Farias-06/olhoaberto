@@ -4,7 +4,7 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-import { IAConfig, Users } from "@/infra/db";
+import { Alerts, IAConfig, Users } from "@/infra/db";
 
 import {
   loginController,
@@ -153,6 +153,56 @@ connectDb().then(() => {
       return;
     }
   );
+
+  app.get("/alerts", authenticatedMiddlewareController, async (req, res) => {
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: "Não autenticado." });
+      return;
+    }
+
+    const alerts = await Alerts.find({}).lean();
+
+    if (!alerts) {
+      res.status(404).json({ message: "Usuário não encontrado." });
+      return;
+    }
+
+    res.status(200).json({ alerts });
+    return;
+  });
+
+  // app.get(
+  //   "/alerts/:alertId",
+  //   authenticatedMiddlewareController,
+  //   async (req, res) => {
+  //     const { alertId } = req.params;
+
+  //     const user = await Users(userId).populate({
+  //       path: "conversations",
+  //       populate: {
+  //         path: "messages",
+  //       },
+  //     });
+
+  //     if (!user) {
+  //       res.status(404).json({ message: "Usuário não encontrado." });
+  //       return;
+  //     }
+
+  //     const conversation = user.conversations.find(
+  //       (conv) => conv._id === conversationId
+  //     );
+
+  //     if (!conversation) {
+  //       res.status(404).json({ message: "Conversa não encontrada." });
+  //       return;
+  //     }
+
+  //     res.status(200).json({ conversation });
+  //   }
+  // );
 
   app.get(
     "/conversations/:conversationId",

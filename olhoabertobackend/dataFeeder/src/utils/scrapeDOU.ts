@@ -20,7 +20,7 @@ const months = [
 export default async () => {
   try {
     logger("Scraping DOU...");
-    for (let year = 2009; year <= 2009; year++) {
+    for (let year = 2013; year <= 2013; year++) {
       for (const month of months) {
         await readContent(year, month);
         console.log({ year });
