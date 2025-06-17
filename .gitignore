@@ -9,7 +9,6 @@ package-lock.json
 out/
 
 # Environment variables
-**/*.env
 !.example-env
 
 # Logs
