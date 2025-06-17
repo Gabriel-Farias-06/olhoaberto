@@ -1,6 +1,20 @@
+version: "3.8"
+
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    restart: unless-stopped
+    networks:
+      - default
+
   olhoabertobackend:
-    network_mode: "host"
     build:
       context: ./olhoabertobackend/dataSearcher
       dockerfile: Dockerfile
@@ -9,9 +23,12 @@ services:
     env_file:
       - ./olhoabertobackend/dataSearcher/.env
     restart: unless-stopped
+    depends_on:
+      - rabbitmq
+    networks:
+      - default
 
   olhoabertofrontend:
-    # network_mode: "host"
     build:
       context: ./olhoabertofrontend
       dockerfile: Dockerfile
@@ -22,6 +39,8 @@ services:
       - /app/node_modules
     environment:
       NODE_ENV: development
+    networks:
+      - default
 
   # ngrok:
   #   image: ngrok/ngrok:latest
@@ -43,7 +62,3 @@ services:
 networks:
   default:
     driver: bridge
-
-volumes:
-  redis_data:
-    driver: local
