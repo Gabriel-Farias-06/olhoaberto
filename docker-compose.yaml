@@ -9,6 +9,7 @@ services:
     restart: unless-stopped
 
   olhoabertofrontend:
+    # network_mode: "host"
     build:
       context: ./olhoabertofrontend
       dockerfile: Dockerfile
@@ -20,22 +21,22 @@ services:
     environment:
       NODE_ENV: development
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    container_name: ngrok_tunnel
-    env_file:
-      - ./.env
-    environment:
-      NGROK_TUNNEL_PORT: 3000
-      NGROK_TUNNEL_HOST: olhoabertofrontend
-      NGROK_TUNNEL_PROTO: http
-    command: "http olhoabertofrontend:3000"
-    ports:
-      - "4040:4040"
-    depends_on:
-      - olhoabertofrontend
-    networks:
-      - default
+  # ngrok:
+  #   image: ngrok/ngrok:latest
+  #   container_name: ngrok_tunnel
+  #   env_file:
+  #     - ./.env
+  #   environment:
+  #     NGROK_TUNNEL_PORT: 3000
+  #     NGROK_TUNNEL_HOST: olhoabertofrontend
+  #     NGROK_TUNNEL_PROTO: http
+  #   command: "http olhoabertofrontend:3000"
+  #   ports:
+  #     - "4040:4040"
+  #   depends_on:
+  #     - olhoabertofrontend
+  #   networks:
+  #     - default
 
 networks:
   default:

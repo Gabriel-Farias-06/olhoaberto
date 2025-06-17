@@ -129,6 +129,7 @@ export default function HomePage() {
           />
 
           <Chat
+            itemType="conversation"
             isOpen={isOpen}
             toggleSidebar={toggleSidebar}
             user={user}

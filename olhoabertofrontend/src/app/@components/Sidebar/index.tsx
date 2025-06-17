@@ -29,7 +29,7 @@ interface SidebarProps {
   selectedItemId: string | null;
   onSelectItem: (item: any) => void;
   onNewItem: () => void;
-  openModal: (tab: "alert" | "profile" | "admin") => void;
+  openModal?: (tab: "alert" | "profile" | "admin") => void;
 }
 
 export default function Sidebar({
@@ -46,11 +46,12 @@ export default function Sidebar({
   const router = useRouter();
   const { handleLogout } = useLogout();
 
-  const [showConfirmDeleteConversation, setShowConfirmDeleteConversation] = useState(false);
-  const [conversationToDelete, setConversationToDelete] = useState<Conversation | null>(null);
+  const [showConfirmDeleteConversation, setShowConfirmDeleteConversation] =
+    useState(false);
+  const [conversationToDelete, setConversationToDelete] =
+    useState<Conversation | null>(null);
 
   const [alertToDelete, setAlertToDelete] = useState<Alert | null>(null);
-
 
   const handleOpenDeleteModal = (item: Conversation | Alert) => {
     if (itemType === "alert") {
@@ -61,15 +62,17 @@ export default function Sidebar({
     setShowConfirmDeleteConversation(true);
   };
 
-
   const handleConfirmDeleteConversation = async () => {
-    const itemToDelete = itemType === "alert" ? alertToDelete : conversationToDelete;
+    const itemToDelete =
+      itemType === "alert" ? alertToDelete : conversationToDelete;
 
     if (!itemToDelete) return;
 
     try {
       const res = await fetch(
-        `http://localhost:4000/${itemType === "alert" ? "alert" : "items"}/${itemToDelete._id}`,
+        `http://localhost:4000/${itemType === "alert" ? "alert" : "items"}/${
+          itemToDelete._id
+        }`,
         {
           method: "DELETE",
           credentials: "include",
@@ -91,7 +94,6 @@ export default function Sidebar({
       console.error("Erro na requisição de deleção:", err);
     }
   };
-
 
   const groupConversationsByDate = (convs: Conversation[]) => {
     const now = new Date();
@@ -183,7 +185,7 @@ export default function Sidebar({
           {itemType === "alert" ? (
             <button
               aria-label="Criar nova conversa"
-              onClick={() => openModal("alert")}
+              onClick={() => openModal && openModal("alert")}
               style={{ background: "none", border: "none", cursor: "pointer" }}
             >
               <FontAwesomeIcon
@@ -202,8 +204,7 @@ export default function Sidebar({
                 className="fa-regular fa-square-plus"
               />
             </button>
-          )
-          }
+          )}
         </SidebarHeader>
 
         <SidebarChats>
@@ -217,17 +218,21 @@ export default function Sidebar({
 
           <div>
             {itemType === "alert" ? (
-              <button onClick={() => router.push("/")} className="sidebar-nav-button">
+              <button
+                onClick={() => router.push("/")}
+                className="sidebar-nav-button"
+              >
                 Voltar para Conversas
               </button>
             ) : (
-              <button onClick={() => router.push("/alertas")} className="sidebar-nav-button">
+              <button
+                onClick={() => router.push("/alertas")}
+                className="sidebar-nav-button"
+              >
                 Ver seus Alertas
               </button>
             )}
           </div>
-
-
 
           <div className="chat-group">{renderConversations()}</div>
         </SidebarChats>
@@ -245,11 +250,16 @@ export default function Sidebar({
 
       <ModalConfirm
         isOpen={showConfirmDeleteConversation}
-        title={`Confirmar exclusão do ${itemType === "alert" ? "alerta" : "conversa"}`}
+        title={`Confirmar exclusão do ${
+          itemType === "alert" ? "alerta" : "conversa"
+        }`}
         message={
           itemType === "alert"
             ? `Tem certeza que deseja excluir o alerta: "${alertToDelete?.title}"? Esta ação é irreversível.`
-            : `Tem certeza que deseja excluir a conversa: "${conversationToDelete?.messages[0]?.content.slice(0, 30)}..."? Esta ação é irreversível.`
+            : `Tem certeza que deseja excluir a conversa: "${conversationToDelete?.messages[0]?.content.slice(
+                0,
+                30
+              )}..."? Esta ação é irreversível.`
         }
         confirmText="Excluir"
         cancelText="Cancelar"
@@ -287,11 +297,13 @@ const ItemBox: React.FC<ItemBoxProps> = ({
         {items.map((item: any) => (
           <li
             key={item._id}
-            className={`conversation-chat${item._id === selectedItemId ? " active-conversation" : ""
-              }`}
+            className={`conversation-chat${
+              item._id === selectedItemId ? " active-conversation" : ""
+            }`}
             title={title}
           >
-            <span className="conversation-chat-text"
+            <span
+              className="conversation-chat-text"
               onClick={() => onSelectItem(item)}
               style={{ cursor: "pointer" }}
             >

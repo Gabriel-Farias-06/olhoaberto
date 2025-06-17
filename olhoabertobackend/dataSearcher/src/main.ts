@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import dotenv from "dotenv";
 import express from "express";
 import session from "express-session";
@@ -23,6 +24,7 @@ import {
 import { connectDb } from "./infra/db";
 import { createServer, Server } from "http";
 import alertConsumer from "./consumers/alertConsumer";
+// import { clients } from "./clients";
 
 dotenv.config();
 
@@ -31,7 +33,7 @@ connectDb().then(() => {
 
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: ["http://localhost:3000", "http://172.18.0.2:3000"],
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
@@ -57,6 +59,22 @@ connectDb().then(() => {
   const io = new Server(server);
 
   alertConsumer(io);
+
+  // app.get('/events', (req, res) => {
+  //   res.setHeader('Content-Type', 'text/event-stream');
+  //   res.setHeader('Cache-Control', 'no-cache');
+  //   res.setHeader('Connection', 'keep-alive');
+
+  //   res.flushHeaders();
+
+  //   clients.push(res);
+
+  //   // Remove client ao desconectar
+  //   req.on('close', () => {
+  //     const idx = clients.indexOf(res);
+  //     if (idx !== -1) clients.splice(idx, 1);
+  //   });
+  // });
 
   app.get("/stream", async (req, res) => {
     const { q: query, email, idConversation } = req.query;
@@ -171,82 +189,94 @@ connectDb().then(() => {
       console.error("Erro ao buscar alertas:", err);
       res.status(500).json({ message: "Erro ao buscar alertas." });
     }
-
-    
   });
 
+  app.get(
+    "/alerts/:id",
+    authenticatedMiddlewareController,
+    async (req, res) => {
+      const userId = req.session.user?.id;
 
-  app.get("/alerts/:id", authenticatedMiddlewareController, async (req, res) => {
-    const userId = req.session.user?.id;
-
-    if (!userId) {
-      res.status(401).json({ message: "Não autenticado." });
-    }
-
-    const alertId = req.params.id;
-
-    try {
-      const alert = await Alerts.findOne({ _id: alertId, user: userId }).lean();
-
-      if (!alert) {
-        res.status(404).json({ message: "Alerta não encontrado." });
+      if (!userId) {
+        res.status(401).json({ message: "Não autenticado." });
       }
 
-      res.status(200).json({ alert });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Erro ao buscar alerta." });
+      const alertId = req.params.id;
+
+      try {
+        const alert = await Alerts.findOne({
+          _id: alertId,
+          user: userId,
+        }).lean();
+
+        if (!alert) {
+          res.status(404).json({ message: "Alerta não encontrado." });
+        }
+
+        res.status(200).json({ alert });
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Erro ao buscar alerta." });
+      }
     }
-  });
+  );
 
   app.post("/alert", authenticatedMiddlewareController, createAlertsController);
 
-  app.delete("/alert/:id", authenticatedMiddlewareController, deleteAlertController);
-
-
-
-
-
-  app.get("/conversations/:conversationId", authenticatedMiddlewareController, async (req, res) => {
-    const { conversationId } = req.params;
-    const userId = req.session.user?.id;
-
-    if (!userId) {
-      res.status(401).json({ message: "Não autenticado." });
-      return;
-    }
-
-    const user = await Users.findById(userId).populate({
-      path: "conversations",
-      populate: {
-        path: "messages",
-      },
-    });
-
-    if (!user) {
-      res.status(404).json({ message: "Usuário não encontrado." });
-      return;
-    }
-
-    const conversation = user.conversations.find(
-      (conv) => conv._id === conversationId
-    );
-
-    if (!conversation) {
-      res.status(404).json({ message: "Conversa não encontrada." });
-      return;
-    }
-
-    res.status(200).json({ conversation });
-  }
+  app.delete(
+    "/alert/:id",
+    authenticatedMiddlewareController,
+    deleteAlertController
   );
 
-  app.delete("/conversations", authenticatedMiddlewareController, deleteAllUserConversations);
+  app.get(
+    "/conversations/:conversationId",
+    authenticatedMiddlewareController,
+    async (req, res) => {
+      const { conversationId } = req.params;
+      const userId = req.session.user?.id;
 
-  app.delete("/conversations/:conversationId", authenticatedMiddlewareController, deleteOneConversation);
+      if (!userId) {
+        res.status(401).json({ message: "Não autenticado." });
+        return;
+      }
 
+      const user = await Users.findById(userId).populate({
+        path: "conversations",
+        populate: {
+          path: "messages",
+        },
+      });
 
+      if (!user) {
+        res.status(404).json({ message: "Usuário não encontrado." });
+        return;
+      }
 
+      const conversation = user.conversations.find(
+        (conv) => conv._id === conversationId
+      );
+
+      if (!conversation) {
+        res.status(404).json({ message: "Conversa não encontrada." });
+        return;
+      }
+
+      res.status(200).json({ conversation });
+    }
+  );
+
+  app.delete(
+    "/conversations",
+    authenticatedMiddlewareController,
+    deleteAllUserConversations
+  );
+
+  app.delete(
+    "/conversations/:conversationId",
+    authenticatedMiddlewareController,
+    deleteOneConversation
+  );
 
   app.post("/login", (req, res) => {
     const { email, password } = req.body;
@@ -285,25 +315,24 @@ connectDb().then(() => {
     deleteUserController(req, res);
   });
 
+  app.get(
+    "/instructions",
+    authenticatedMiddlewareController,
+    async (req, res) => {
+      const user = req.session.user;
 
+      if (!user || user.role !== "admin") {
+        res.status(403).json({ message: "Acesso negado." });
+      }
 
-
-
-  app.get("/instructions", authenticatedMiddlewareController, async (req, res) => {
-    const user = req.session.user;
-
-    if (!user || user.role !== "admin") {
-      res.status(403).json({ message: "Acesso negado." });
+      try {
+        const config = await IAConfig.findOne();
+        res.status(200).json({ instructions: config?.instructions || "" });
+      } catch (e) {
+        console.error(e);
+        res.status(500).json({ message: "Erro ao buscar configurações." });
+      }
     }
-
-    try {
-      const config = await IAConfig.findOne();
-      res.status(200).json({ instructions: config?.instructions || "" });
-    } catch (e) {
-      console.error(e);
-      res.status(500).json({ message: "Erro ao buscar configurações." });
-    }
-  }
   );
 
   app.put("/instructions", authenticatedMiddlewareController, (req, res) => {

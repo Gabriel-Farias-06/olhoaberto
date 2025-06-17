@@ -1,13 +1,9 @@
 "use client";
 
-// layout.tsx 
+// layout.tsx
 import ThemeWrapper from "./ThemeWrapper";
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: any) {
   return (
     <html lang="pt-br">
       <body>
@@ -15,4 +11,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-} 
+}
