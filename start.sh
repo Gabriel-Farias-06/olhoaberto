@@ -12,6 +12,7 @@ echo "✅ Containers iniciados."
 
 echo "🔨 Executando npm run build..."
 cd olhoabertofrontend
+npm install
 npm run build
 
 echo "✅ Build concluído."
