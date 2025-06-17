@@ -28,19 +28,19 @@ services:
     networks:
       - default
 
-  olhoabertofrontend:
-    build:
-      context: ./olhoabertofrontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./olhoabertofrontend:/app
-      - /app/node_modules
-    environment:
-      NODE_ENV: development
-    networks:
-      - default
+  # olhoabertofrontend:
+  #   build:
+  #     context: ./olhoabertofrontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./olhoabertofrontend:/app
+  #     - /app/node_modules
+  #   environment:
+  #     NODE_ENV: development
+  #   networks:
+  #     - default
 
   # ngrok:
   #   image: ngrok/ngrok:latest
