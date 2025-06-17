@@ -4,6 +4,8 @@ services:
     build:
       context: ./olhoabertobackend/dataSearcher
       dockerfile: Dockerfile
+    ports:
+      - "4040:4040"
     env_file:
       - ./olhoabertobackend/dataSearcher/.env
     restart: unless-stopped
