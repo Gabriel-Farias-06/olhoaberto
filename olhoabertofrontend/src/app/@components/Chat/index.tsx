@@ -97,7 +97,7 @@ export default function Chat({
       console.log("Tentando criar conversa para o user:", user);
       if (!currentConversationId) {
         const res = await fetch(
-          `http://localhost:4000/conversations/${user._id}`,
+          `http://localhost:4040/conversations/${user._id}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -123,7 +123,7 @@ export default function Chat({
       }
 
       const resStream = await fetch(
-        `http://localhost:4000/stream?q=${encodeURIComponent(
+        `http://localhost:4040/stream?q=${encodeURIComponent(
           query
         )}&idItem=${currentConversationId}&email=${encodeURIComponent(
           user.email
@@ -353,32 +353,34 @@ export default function Chat({
         )}
       </ChatMessages>
 
-      { itemType === "alert" ? "" :
-      <ChatInput>
-        <input
-          type="text"
-          placeholder={
-            isLoading ? "Buscando resposta..." : "Digite sua pergunta..."
-          }
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") submitQuery();
-          }}
-          disabled={isLoading}
-          aria-label="Campo de pergunta"
-        />
+      {itemType === "alert" ? (
+        ""
+      ) : (
+        <ChatInput>
+          <input
+            type="text"
+            placeholder={
+              isLoading ? "Buscando resposta..." : "Digite sua pergunta..."
+            }
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submitQuery();
+            }}
+            disabled={isLoading}
+            aria-label="Campo de pergunta"
+          />
 
-        <button onClick={submitQuery}>
-          <div className="box-send">
-            <FontAwesomeIcon
-              icon={faPaperPlane}
-              className="fa-regular fa-paper-plane"
-            />
-          </div>
-        </button>
-      </ChatInput>
-      }
+          <button onClick={submitQuery}>
+            <div className="box-send">
+              <FontAwesomeIcon
+                icon={faPaperPlane}
+                className="fa-regular fa-paper-plane"
+              />
+            </div>
+          </button>
+        </ChatInput>
+      )}
     </ChatContainer>
   );
 }

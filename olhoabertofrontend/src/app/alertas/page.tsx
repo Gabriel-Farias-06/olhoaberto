@@ -38,7 +38,7 @@ export default function Alertas() {
 
   const handleSelectAlert = async (item: Alert) => {
     try {
-      const res = await fetch(`http://localhost:4000/alerts/${item._id}`, {
+      const res = await fetch(`http://localhost:4040/alerts/${item._id}`, {
         method: "GET",
         credentials: "include",
       });
@@ -59,10 +59,12 @@ export default function Alertas() {
       setIdAlert(_selectedAlert._id);
       setSelectedAlertId(_selectedAlert._id);
 
-      const convertedMessages: Message[] = _selectedAlert.results.map((res) => ({
-        role: "assistant",
-        content: res.answer,
-      }));
+      const convertedMessages: Message[] = _selectedAlert.results.map(
+        (res) => ({
+          role: "assistant",
+          content: res.answer,
+        })
+      );
       setMessages(convertedMessages);
 
       console.log("Selecionado:", _selectedAlert);
@@ -71,10 +73,9 @@ export default function Alertas() {
     }
   };
 
-
   useEffect(() => {
     const fetchAlerts = async () => {
-      const res = await fetch("http://localhost:4000/alerts", {
+      const res = await fetch("http://localhost:4040/alerts", {
         credentials: "include",
       });
 
@@ -95,7 +96,7 @@ export default function Alertas() {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch("http://localhost:4000/me", {
+        const res = await fetch("http://localhost:4040/me", {
           credentials: "include",
         });
 

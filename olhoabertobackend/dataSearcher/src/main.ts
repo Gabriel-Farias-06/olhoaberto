@@ -24,16 +24,20 @@ import {
 import { connectDb } from "./infra/db";
 import { createServer, Server } from "http";
 import alertConsumer from "./consumers/alertConsumer";
+import path from "path";
 // import { clients } from "./clients";
 
-dotenv.config();
+dotenv.config({
+  path: path.resolve(process.cwd(), `.env.${process.env.NODE_ENV || "dev"}`),
+});
 
 connectDb().then(() => {
-  const app = express();
+  console.log(process.env);
 
+  const app = express();
   app.use(
     cors({
-      origin: ["http://localhost:3000", "http://172.18.0.2:3000"],
+      origin: [process.env.DOMAIN ?? ""],
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],

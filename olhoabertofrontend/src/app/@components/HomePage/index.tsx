@@ -45,7 +45,7 @@ export default function HomePage() {
   const handleSelectConversation = async (conversation: Conversation) => {
     try {
       const res = await fetch(
-        `http://localhost:4000/conversations/${conversation._id}`,
+        `http://localhost:4040/conversations/${conversation._id}`,
         {
           credentials: "include",
         }
@@ -71,7 +71,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchConversations = async () => {
-      const res = await fetch("http://localhost:4000/conversations", {
+      const res = await fetch("http://localhost:4040/conversations", {
         credentials: "include",
       });
 
@@ -91,7 +91,7 @@ export default function HomePage() {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch("http://localhost:4000/me", {
+        const res = await fetch("http://localhost:4040/me", {
           credentials: "include",
         });
 

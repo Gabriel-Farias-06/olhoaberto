@@ -21,26 +21,25 @@ services:
     ports:
       - "4040:4040"
     env_file:
-      - ./olhoabertobackend/dataSearcher/.env
+      - ./olhoabertobackend/dataSearcher/.env.prod
+    environment:
+      NODE_ENV: prod
     restart: unless-stopped
     depends_on:
       - rabbitmq
     networks:
       - default
 
-  # olhoabertofrontend:
-  #   build:
-  #     context: ./olhoabertofrontend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - ./olhoabertofrontend:/app
-  #     - /app/node_modules
-  #   environment:
-  #     NODE_ENV: development
-  #   networks:
-  #     - default
+  olhoabertofrontend:
+    build:
+      context: ./olhoabertofrontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: prod
+    networks:
+      - default
 
   # ngrok:
   #   image: ngrok/ngrok:latest
