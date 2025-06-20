@@ -22,22 +22,18 @@ import {
   deleteAlertController,
 } from "./controllers";
 import { connectDb } from "./infra/db";
-import { createServer, Server } from "http";
 import alertConsumer from "./consumers/alertConsumer";
 import path from "path";
-// import { clients } from "./clients";
 
 dotenv.config({
   path: path.resolve(process.cwd(), `.env.${process.env.NODE_ENV || "dev"}`),
 });
 
-connectDb().then(() => {
-  console.log(process.env);
-
+connectDb().then(async () => {
   const app = express();
   app.use(
     cors({
-      origin: [process.env.DOMAIN ?? ""],
+      origin: [process.env.DOMAIN ?? "", "http://localhost:3000"],
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
@@ -59,22 +55,23 @@ connectDb().then(() => {
     })
   );
 
-  const server = createServer(app);
-  const io = new Server(server);
+  alertConsumer();
 
-  alertConsumer(io);
+  // app.get("/sse", (req, res) => {
+  //   console.log("conectrado");
 
-  // app.get('/events', (req, res) => {
-  //   res.setHeader('Content-Type', 'text/event-stream');
-  //   res.setHeader('Cache-Control', 'no-cache');
-  //   res.setHeader('Connection', 'keep-alive');
+  //   res.setHeader("Content-Type", "text/event-stream");
+  //   res.setHeader("Cache-Control", "no-cache");
+  //   res.setHeader("Connection", "keep-alive");
 
   //   res.flushHeaders();
 
   //   clients.push(res);
-
+  //   res.write(
+  //     `event: newArticle` + `data: ${JSON.stringify({ response: "sdf" })}`
+  //   );
   //   // Remove client ao desconectar
-  //   req.on('close', () => {
+  //   req.on("close", () => {
   //     const idx = clients.indexOf(res);
   //     if (idx !== -1) clients.splice(idx, 1);
   //   });
@@ -349,7 +346,7 @@ connectDb().then(() => {
     updateInstructions(email, instructions, res);
   });
 
-  server.listen(4040, () => {
+  app.listen(4040, () => {
     console.info("Server is running on http://localhost:4040");
   });
 });

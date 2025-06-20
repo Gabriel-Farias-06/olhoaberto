@@ -1,23 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { clients } from "@/clients";
 import { Alerts, Articles, IAConfig } from "@/infra/db";
 import { LLMHub } from "@/infra/llm";
 import { logger } from "@/utils";
 import amqplib from "amqplib";
-import { IncomingMessage, Server, ServerResponse } from "http";
 
-export default async (
-  io: Server<typeof IncomingMessage, typeof ServerResponse>
-) => {
+export default async () => {
   const conn = await amqplib.connect(process.env.RBTMQ_BROKER ?? "");
   const channel = await conn.createChannel();
   await channel.assertQueue("newArticles", { durable: true });
 
-  console.info(" [*] Waiting for messages in newArticles queue");
+  logger("Waiting for messages in newArticles queue");
 
   channel.consume("newArticles", async (msg: any) => {
     if (msg) {
       logger("Received newArticles event");
-      console.log("MSG: ", msg);
 
       const alerts = await Alerts.find({});
       const llmHub = new LLMHub();
@@ -44,27 +41,26 @@ export default async (
         logger(`${articles.length} encontrados`);
 
         if (articles.length > 0) {
-          const stream = llmHub.stream(
-            `Resuma os artigos relacionados a estritamente a: "${
-              alert.title
-            }: ${alert.description}" com base nas limitações: "${
-              config?.instructions
-            }". Organize em Markdown. Se não houver resultado, retorne nada. Artigos: ${JSON.stringify(
-              articles
-            )}`
-          );
+          const stream = llmHub.stream(`Coloque os artigos relacionados a: "${
+            alert.title
+          }" "${alert.description}". Com base nestas instruções: ${
+            config?.instructions
+          }
+           juntos, separados por titulos em markdown. . Se não há artigos relevantes, retorne "Não foram encontrados artigos relevantes". Não escreva nenhum enunciado. Organize por 
+           Artigos: ${JSON.stringify(
+             articles
+           )}. Saniteze-os também, tirando as tags xml. Conserve todas as informações. Organize em Título, Conteúdo, Data e Documento PDF. `);
 
           let response = "";
           for await (const chunk of stream) {
             response += chunk;
           }
-          console.log({ response });
-
-          io.emit("alertResult", {
-            userId: alert.user,
-            description: alert.description,
-            resultado: response,
-          });
+          if (response === "Não foram encontrados artigos relevantes")
+            clients.forEach((client) => {
+              client.write(
+                `event: newArticle` + `data: ${JSON.stringify(response)}`
+              );
+            });
 
           const newResult = {
             date: new Date().toISOString(),
