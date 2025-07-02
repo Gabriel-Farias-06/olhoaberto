@@ -2,7 +2,7 @@ import { Users } from "@/infra/db";
 import { Request, Response } from "express";
 
 export default async (req: Request, res: Response) => {
-  const userId = req.session.user?.id;
+  const userId = req.user?._id;
   const { conversationId } = req.params;
 
   if (!userId) {
@@ -13,13 +13,15 @@ export default async (req: Request, res: Response) => {
     const updatedUser = await Users.findByIdAndUpdate(
       userId,
       {
-        $pull: { conversations: { _id: conversationId } }
+        $pull: { conversations: { _id: conversationId } },
       },
       { new: true }
     );
 
     if (!updatedUser) {
-      res.status(404).json({ message: "Usuário não encontrado ou conversa não existe." });
+      res
+        .status(404)
+        .json({ message: "Usuário não encontrado ou conversa não existe." });
     }
 
     res.status(200).json({ message: "Conversa deletada com sucesso." });

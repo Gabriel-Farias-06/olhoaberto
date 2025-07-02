@@ -20,10 +20,9 @@ const months = [
 export default async () => {
   try {
     logger("Scraping DOU...");
-    for (let year = 2014; year <= 2014; year++) {
+    for (let year = 2016; year <= 2016; year++) {
       for (const month of months) {
         await readContent(year, month);
-        console.log({ year });
       }
 
       if (BROKER.hasNewArticle) {

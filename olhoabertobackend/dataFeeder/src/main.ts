@@ -9,12 +9,14 @@ dotenv.config();
 
 mongoose.connect(process.env.MONGO_DB_URL!).then(async () => {
   logger("-=-=-=-=-=-=-= DATA FEEDER STARTED -=-=-=-=-=-=-=");
-  // import
 
   const broker = await amqplib.connect(process.env.RBTMQ_BROKER ?? "");
   BROKER.value = broker;
   scrapeDOU();
 });
 
-// searches for new data each 10 minutes
-// cron.schedule("*/1 * * * *", getGeneralData);
+// cron.schedule("0 8 * * 1-5", () => {
+//   const broker = await amqplib.connect(process.env.RBTMQ_BROKER ?? "");
+//   BROKER.value = broker;
+//   scrapeDOU();
+// });

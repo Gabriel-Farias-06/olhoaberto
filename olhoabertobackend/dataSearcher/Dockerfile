@@ -24,7 +24,7 @@ WORKDIR /app
 COPY --from=deps /app /app
 
 # Install Playwright browsers
-RUN npx playwright install --with-deps
+# RUN npx playwright install --with-deps
 
 ENV NODE_ENV=production
 

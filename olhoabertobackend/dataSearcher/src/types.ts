@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type SearchArticlesInput = {
   query: string;
 };
@@ -16,16 +17,9 @@ export type SearchArticlesOutput = {
   sources: Source[];
 };
 
-import "express-session";
-
-declare module "express-session" {
-  interface SessionData {
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      role: string;
-      conversations: any[]; 
-    };
-  }
+export interface JwtUserPayload {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
 }

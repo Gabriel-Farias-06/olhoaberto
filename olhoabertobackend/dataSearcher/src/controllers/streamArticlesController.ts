@@ -2,6 +2,42 @@ import { LLMHub } from "@/infra/llm";
 import { SearchArticlesOutput } from "../types";
 import { logger } from "../utils";
 import { Articles, IAConfig, Users } from "@/infra/db";
+import { Request, Response } from "express";
+
+export default async (req: Request, res: Response) => {
+  const { q: query, email, idConversation } = req.query;
+
+  if (!query) {
+    res.status(400).json({ message: "Query parameter 'q' is required." });
+  }
+
+  console.log("Stream request received:", { query, email, idConversation });
+
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Transfer-Encoding", "chunked");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  try {
+    const streamEmail = typeof email === "string" ? email : undefined;
+    const streamIdConversation =
+      typeof idConversation === "string" ? idConversation : undefined;
+
+    for await (const chunk of streamArticles(
+      streamEmail,
+      query as string,
+      streamIdConversation
+    )) {
+      res.write(JSON.stringify(chunk) + "\n");
+    }
+    res.end();
+  } catch (err) {
+    console.error("Error during streaming:", err);
+    res
+      .status(500)
+      .end(JSON.stringify({ message: "Error during article streaming." }));
+  }
+};
 
 async function* streamArticles(
   email: string | undefined,
@@ -32,9 +68,6 @@ async function* streamArticles(
     path,
     date,
   }));
-  console.log({ articles });
-
-  // const config = (await Articles.find({}))[0];
 
   const limitacions = await IAConfig.findOne();
   const stream = llmHub.stream(
@@ -75,5 +108,3 @@ async function* streamArticles(
       }
     );
 }
-
-export default streamArticles;
