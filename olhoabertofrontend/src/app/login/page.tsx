@@ -35,7 +35,6 @@ export default function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -45,6 +44,7 @@ export default function Login() {
 
       const data = await response.json();
       console.log("Login feito com sucesso!", data);
+      localStorage.setItem("accessToken", JSON.stringify(data.accessToken));
 
       setMessage("Login feito com sucesso! Redirecionando...");
       setMessageType("succes");

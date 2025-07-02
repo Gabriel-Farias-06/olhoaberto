@@ -28,7 +28,7 @@ export default async (req: Request, res: Response) => {
 
     const accessToken = jwt.sign(
       {
-        id: user._id.toString(),
+        _id: user._id.toString(),
         email: user.email,
         name: user.name,
         role: user.role,
@@ -40,12 +40,7 @@ export default async (req: Request, res: Response) => {
     await Users.updateOne({ _id: user._id }, { accessToken });
 
     res.status(200).json({
-      id: user._id.toString(),
-      email: user.email,
-      name: user.name,
-      role: user.role,
       accessToken,
-      conversations: user.conversations || [],
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {

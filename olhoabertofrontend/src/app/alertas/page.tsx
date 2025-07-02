@@ -6,11 +6,13 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { UserData } from "@/types/User";
 import type { Alert, Message } from "@/types/User";
+import { fetchWithInterceptor } from "@/lib";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function Alertas() {
   const router = useRouter();
 
-  const [user, setUser] = useState<UserData | null>(null);
+  const { user } = useTheme();
   const [showModal, setShowModal] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [modalTab, setModalTab] = useState<"alert" | "profile" | "admin">(
@@ -38,10 +40,12 @@ export default function Alertas() {
 
   const handleSelectAlert = async (item: Alert) => {
     try {
-      const res = await fetch(`http://localhost:4040/alerts/${item._id}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const res = await fetchWithInterceptor(
+        `http://localhost:4040/alerts/${item._id}`,
+        {
+          method: "GET",
+        }
+      );
 
       if (!res.ok) {
         const errorText = await res.text();
@@ -75,12 +79,8 @@ export default function Alertas() {
 
   useEffect(() => {
     const fetchAlerts = async () => {
-      const res = await fetch("http://localhost:4040/alerts", {
-        credentials: "include",
-      });
-
+      const res = await fetchWithInterceptor("http://localhost:4040/alerts");
       const data = await res.json();
-
       setAlerts(data.alerts);
     };
 
@@ -92,31 +92,6 @@ export default function Alertas() {
     setSelectedAlert(null);
     setIdAlert(null);
   };
-
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const res = await fetch("http://localhost:4040/me", {
-          credentials: "include",
-        });
-
-        const data = await res.json();
-        console.log("Status da resposta:", data);
-        const { user } = data;
-
-        if (user) {
-          const { _id, email, name, role, conversations } = user;
-          setUser({ _id, email, name, role, conversations });
-        } else {
-          router.push("/login");
-        }
-      } catch (err) {
-        console.error("Erro ao verificar autenticação: ", err);
-        router.push("/login");
-      }
-    }
-    checkAuth();
-  }, [router]);
 
   return (
     <AppContainer>
@@ -151,8 +126,6 @@ export default function Alertas() {
           {showModal && (
             <Modal
               closeModal={() => setShowModal(false)}
-              user={user}
-              setUser={setUser}
               initialTab={modalTab}
             />
           )}

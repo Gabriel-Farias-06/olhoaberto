@@ -7,10 +7,15 @@ export function useLogout() {
 
   async function handleLogout() {
     try {
-      const res = await fetch("http://localhost:4040/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      const headers: HeadersInit = {
+        Authorization: `Bearer ${localStorage
+          .getItem("accessToken")
+          ?.replaceAll('"', "")}`,
+        "Content-Type": "application/json",
+      };
+
+      const res = await fetch("http://localhost:4040/logout", { headers });
+      console.log(res);
 
       if (res.ok) {
         router.push("/login");

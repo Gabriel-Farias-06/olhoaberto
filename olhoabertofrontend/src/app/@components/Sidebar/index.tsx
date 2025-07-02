@@ -75,7 +75,6 @@ export default function Sidebar({
         }`,
         {
           method: "DELETE",
-          credentials: "include",
         }
       );
 

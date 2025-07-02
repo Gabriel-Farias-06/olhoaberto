@@ -8,11 +8,12 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { UserData } from "@/types/User";
 import type { Conversation, Message } from "@/types/User";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function HomePage() {
   const router = useRouter();
+  const { user } = useTheme();
 
-  const [user, setUser] = useState<UserData | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [modalTab, setModalTab] = useState<"alert" | "profile" | "admin">(
@@ -24,10 +25,16 @@ export default function HomePage() {
     null
   );
   const [messages, setMessages] = useState<Message[]>([]);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>(
+    user.conversations
+  );
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
+
+  useEffect(() => {
+    setConversations(user.conversations);
+  }, [user]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -46,9 +53,7 @@ export default function HomePage() {
     try {
       const res = await fetch(
         `http://localhost:4040/conversations/${conversation._id}`,
-        {
-          credentials: "include",
-        }
+        {}
       );
 
       if (!res.ok) {
@@ -69,49 +74,11 @@ export default function HomePage() {
     }
   };
 
-  useEffect(() => {
-    const fetchConversations = async () => {
-      const res = await fetch("http://localhost:4040/conversations", {
-        credentials: "include",
-      });
-
-      const data = await res.json();
-      setConversations(data.conversations);
-    };
-
-    fetchConversations();
-  }, []);
-
   const handleNewConversation = () => {
     setMessages([]);
     setSelectedConversation(null);
     setIdConversation(null);
   };
-
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const res = await fetch("http://localhost:4040/me", {
-          credentials: "include",
-        });
-
-        const data = await res.json();
-        console.log("Status da resposta:", data);
-        const { user } = data;
-
-        if (user) {
-          const { _id, email, name, role, conversations } = user;
-          setUser({ _id, email, name, role, conversations });
-        } else {
-          router.push("/login");
-        }
-      } catch (err) {
-        console.error("Erro ao verificar autenticação: ", err);
-        router.push("/login");
-      }
-    }
-    checkAuth();
-  }, [router]);
 
   return (
     <AppContainer>
@@ -145,8 +112,6 @@ export default function HomePage() {
           {showModal && (
             <Modal
               closeModal={() => setShowModal(false)}
-              user={user}
-              setUser={setUser}
               initialTab={modalTab}
             />
           )}

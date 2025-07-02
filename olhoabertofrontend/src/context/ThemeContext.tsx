@@ -9,13 +9,16 @@ import {
   useEffect,
 } from "react";
 import { lightTheme, darkTheme } from "../styles/theme";
-import socket from "@/lib/socket";
+import { UserData } from "@/types/User";
+import { useRouter } from "next/navigation";
+import { fetchWithInterceptor } from "@/lib";
 
 // Tipo do valor do contexto
 type ThemeContextType = {
   toggleTheme: () => void;
   isDarkMode: boolean;
   theme: typeof lightTheme;
+  user: UserData;
 };
 
 // Crie o contexto com o tipo correto e um valor inicial nulo
@@ -24,30 +27,30 @@ const ThemeToggleContext = createContext<ThemeContextType | null>(null);
 // Componente Provider
 export const ThemeProviderCustom = ({ children }: { children: ReactNode }) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [user, setUser] = useState<UserData>({} as UserData);
+  const router = useRouter();
 
   const toggleTheme = () => setIsDarkMode((prev) => !prev);
 
   const theme = isDarkMode ? darkTheme : lightTheme;
 
   useEffect(() => {
-    const handleAlert = (data: {
-      userId: string;
-      description: string;
-      resultado: string;
-    }) => {
-      console.log("Received alert:", data);
-      // handle the alert (e.g., show toast, update state, etc.)
-    };
+    if (!window.location.href.includes("/login")) {
+      fetchWithInterceptor(`http://localhost:4040/me`, {
+        method: "GET",
+      }).then(async (res) => {
+        const json = await res.json();
+        console.log({ json });
 
-    socket.on("alertResult", handleAlert);
-
-    return () => {
-      socket.off("alertResult", handleAlert); // cleanup
-    };
+        setUser(json.user);
+      });
+    }
   }, []);
 
   return (
-    <ThemeToggleContext.Provider value={{ toggleTheme, isDarkMode, theme }}>
+    <ThemeToggleContext.Provider
+      value={{ toggleTheme, isDarkMode, theme, user }}
+    >
       {children}
     </ThemeToggleContext.Provider>
   );

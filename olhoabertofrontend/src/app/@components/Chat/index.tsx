@@ -29,6 +29,8 @@ import { Dispatch, SetStateAction } from "react";
 import { UserData, Conversation, Alert } from "@/types/User";
 import { useLogout } from "@/hooks/userLogout";
 import { Message } from "@/types/User";
+import { fetchWithInterceptor } from "@/lib";
+import { useTheme } from "@/context/ThemeContext";
 
 type QuerySources = {
   pdfPage: string;
@@ -57,7 +59,6 @@ interface ChatProps {
 
 export default function Chat({
   isOpen,
-  user,
   toggleSidebar,
   openModal,
   idItem,
@@ -69,6 +70,7 @@ export default function Chat({
   itemType,
 }: ChatProps) {
   const router = useRouter();
+  const { user } = useTheme();
 
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -76,13 +78,32 @@ export default function Chat({
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isLightMode, setIsLightMode] = useState(false);
-  const { handleLogout } = useLogout();
+  // const { handleLogout } = useLogout();
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const userIconRef = useRef<HTMLDivElement>(null);
 
   const toggleTheme = () => setIsLightMode((prev) => !prev);
   const toggleUserMenu = () => setShowUserMenu((prev) => !prev);
+
+  const handleLogout = async () => {
+    try {
+      router.push("/login");
+
+      const res = await fetchWithInterceptor("http://localhost:4040/logout");
+
+      // bug
+      if (res.ok) {
+        router.push("/login");
+      } else {
+        const data = await res.json();
+        alert("Erro ao sair: " + data.message);
+      }
+    } catch (error) {
+      console.error("Erro no logout:", error);
+      alert("Erro inesperado ao tentar sair.");
+    }
+  };
 
   const submitQuery = async () => {
     if (!query.trim()) return;
@@ -102,7 +123,6 @@ export default function Chat({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ title: query }),
-            credentials: "include",
           }
         );
 

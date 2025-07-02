@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken";
 export default async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader?.startsWith("Bearer ")) {
+  if (authHeader === undefined || !authHeader?.startsWith("Bearer ")) {
     res.status(401).json({ message: "Not authenticated" });
   }
 

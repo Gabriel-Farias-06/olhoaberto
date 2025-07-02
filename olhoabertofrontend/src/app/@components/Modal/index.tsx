@@ -9,9 +9,8 @@ import {
   faEyeSlash,
   faBell as faBellSolid,
 } from "@fortawesome/free-solid-svg-icons";
-import { faPaperPlane } from "@fortawesome/free-regular-svg-icons";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   ModalOverlay,
   ModalContent,
@@ -21,20 +20,15 @@ import {
   ModalTabContent,
 } from "./styles";
 
-import { marked } from "marked";
-import { useRouter } from "next/navigation";
-import { UserData } from "@/types/User";
-
 import ModalConfirm from "./ModalConfirm";
+import { useTheme } from "@/context/ThemeContext";
 
 interface ModalProps {
   closeModal: () => void;
-  user: UserData;
-  setUser: (user: UserData) => void;
   initialTab: "alert" | "profile" | "admin";
 }
 
-export default function Modal({ closeModal, user, initialTab }: ModalProps) {
+export default function Modal({ closeModal, initialTab }: ModalProps) {
   const [activeTab, setActiveTab] = useState<"alert" | "profile" | "admin">(
     initialTab
   );
@@ -58,13 +52,15 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
   const [instructions, setInstructions] = useState("");
   const [alertMsg, setAlertMsg] = useState("");
 
+  const { user } = useTheme();
+
   const handleConfirmSaveAdmin = () => {
     fetch("http://localhost:4040/instructions", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
+
       body: JSON.stringify({ instructions }),
     })
       .then((res) => {
@@ -85,7 +81,6 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
     if (activeTab === "admin") {
       fetch("http://localhost:4040/instructions", {
         method: "GET",
-        credentials: "include",
       })
         .then((res) => res.json())
         .then((data) => setInstructions(data.instructions || ""))
@@ -114,7 +109,7 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
 
       const response = await fetch("http://localhost:4040/alert", {
         method: "POST",
-        credentials: "include",
+
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, description }), // <-- aqui é "name"
       });
@@ -146,7 +141,7 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
+
         body: JSON.stringify({ password: userPassword }),
       });
 
@@ -157,7 +152,6 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
 
       await fetch("http://localhost:4040/logout", {
         method: "POST",
-        credentials: "include",
       });
 
       window.location.reload();
@@ -189,7 +183,7 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
     try {
       const response = await fetch("http://localhost:4040/updateUser", {
         method: "PUT",
-        credentials: "include",
+
         headers: {
           "Content-Type": "application/json",
         },
@@ -212,7 +206,6 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
 
       await fetch("http://localhost:4040/logout", {
         method: "POST",
-        credentials: "include",
       });
 
       window.location.href = "/login";
@@ -226,7 +219,6 @@ export default function Modal({ closeModal, user, initialTab }: ModalProps) {
     try {
       const response = await fetch("http://localhost:4040/conversations", {
         method: "DELETE",
-        credentials: "include",
       });
 
       const contentType = response.headers.get("content-type") || "";

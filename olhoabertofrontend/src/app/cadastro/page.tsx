@@ -36,7 +36,7 @@ export default function Cadastro() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
+
         body: JSON.stringify(formData),
       });
 
