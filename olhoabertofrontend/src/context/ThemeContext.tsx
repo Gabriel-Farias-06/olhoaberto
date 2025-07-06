@@ -29,22 +29,30 @@ export const ThemeProviderCustom = ({ children }: { children: ReactNode }) => {
 
   const theme = isDarkMode ? darkTheme : lightTheme;
 
-  useEffect(() => {
-    const handleAlert = (data: {
-      userId: string;
-      description: string;
-      resultado: string;
-    }) => {
-      console.log("Received alert:", data);
-      // handle the alert (e.g., show toast, update state, etc.)
-    };
+  const [messages, setMessages] = useState<string[]>([]);
 
-    socket.on("alertResult", handleAlert);
+  // useEffect(() => {
+  //   const eventSource = new EventSource("http://localhost:4040/sse");
 
-    return () => {
-      socket.off("alertResult", handleAlert); // cleanup
-    };
-  }, []);
+  //   eventSource.onmessage = (event) => {
+  //     const data = JSON.parse(event.data);
+  //     console.log({ data });
+
+  //     setMessages((prev) => [...prev, data.text || data]);
+  //   };
+
+  //   eventSource.addEventListener("user-connected", (event) => {
+  //     const data = JSON.parse(event.data);
+  //     console.log("User connected:", data);
+  //   });
+
+  //   eventSource.onerror = (err) => {
+  //     console.error("SSE error:", err);
+  //     eventSource.close();
+  //   };
+
+  //   return () => eventSource.close();
+  // }, []);
 
   return (
     <ThemeToggleContext.Provider value={{ toggleTheme, isDarkMode, theme }}>

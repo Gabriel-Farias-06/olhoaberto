@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 
 export default (req: Request, res: Response, next: NextFunction) => {
-  if (req.session.user) {
-    return next();
-  }
+  return next();
+  // if (req.session.user) {
+  // }
 
-  res.status(401).json({ message: "Not authenticated" });
+  // res.status(401).json({ message: "Not authenticated" });
 };

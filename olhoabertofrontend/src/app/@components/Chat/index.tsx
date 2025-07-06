@@ -69,6 +69,7 @@ export default function Chat({
   itemType,
 }: ChatProps) {
   const router = useRouter();
+  console.log({ messages });
 
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);

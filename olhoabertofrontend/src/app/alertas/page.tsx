@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { UserData } from "@/types/User";
 import type { Alert, Message } from "@/types/User";
+import { marked } from "marked";
 
 export default function Alertas() {
   const router = useRouter();
@@ -59,11 +60,11 @@ export default function Alertas() {
       setIdAlert(_selectedAlert._id);
       setSelectedAlertId(_selectedAlert._id);
 
-      const convertedMessages: Message[] = _selectedAlert.results.map(
-        (res) => ({
+      const convertedMessages: Message[] = await Promise.all(
+        _selectedAlert.results.map(async (res) => ({
           role: "assistant",
-          content: res.answer,
-        })
+          content: await marked(res.answer),
+        }))
       );
       setMessages(convertedMessages);
 

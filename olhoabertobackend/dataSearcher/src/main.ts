@@ -34,7 +34,7 @@ connectDb().then(async () => {
   app.use(
     cors({
       origin: [process.env.DOMAIN ?? "", "http://localhost:3000"],
-      credentials: true,
+      // credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
     })
@@ -136,10 +136,10 @@ connectDb().then(async () => {
       res.status(200).json({
         message: "Authenticated",
         user: {
-          _id: req.session.user.id,
-          name: req.session.user.name,
-          email: req.session.user.email,
-          role: req.session.user.role,
+          _id: "req.session.user.id",
+          name: "Davi",
+          email: "davi.feitosa1337@gmail.com",
+          role: "admin",
           conversations: req.session.user.conversations,
         },
       });
@@ -279,8 +279,15 @@ connectDb().then(async () => {
     deleteOneConversation
   );
 
+  app.get("/ada", (req, res) => {
+    console.log("olas");
+    res.status(200).json({ message: "ok" }); // finalize a resposta
+  });
+
   app.post("/login", (req, res) => {
     const { email, password } = req.body;
+    console.log({ email, password });
+
     if (!email || !password) {
       res.status(400).json({ message: "Email and password are required" });
     }

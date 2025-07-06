@@ -24,12 +24,12 @@ WORKDIR /app
 COPY --from=deps /app /app
 
 # Install Playwright browsers
-RUN npx playwright install --with-deps
+# RUN npx playwright install --with-deps
 
 ENV NODE_ENV=production
 
 # Expose the port (adjust if your app uses a different one)
-EXPOSE 4000
+EXPOSE 4040
 
 # Run your app
 CMD ["npm", "start"]

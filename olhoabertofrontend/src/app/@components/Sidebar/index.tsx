@@ -70,9 +70,9 @@ export default function Sidebar({
 
     try {
       const res = await fetch(
-        `http://localhost:4040/${itemType === "alert" ? "alert" : "items"}/${
-          itemToDelete._id
-        }`,
+        `http://localhost:4040/${
+          itemType === "alert" ? "alerts" : "conversations"
+        }/${itemToDelete._id}`,
         {
           method: "DELETE",
           credentials: "include",
