@@ -11,7 +11,7 @@ import {
 import { lightTheme, darkTheme } from "../styles/theme";
 import { UserData } from "@/types/User";
 import { useRouter } from "next/navigation";
-import { fetchWithInterceptor } from "@/lib";
+import { axios } from "@/lib";
 
 // Tipo do valor do contexto
 type ThemeContextType = {
@@ -19,6 +19,7 @@ type ThemeContextType = {
   isDarkMode: boolean;
   theme: typeof lightTheme;
   user: UserData;
+  setUser: (user: UserData) => void;
 };
 
 // Crie o contexto com o tipo correto e um valor inicial nulo
@@ -35,21 +36,20 @@ export const ThemeProviderCustom = ({ children }: { children: ReactNode }) => {
   const theme = isDarkMode ? darkTheme : lightTheme;
 
   useEffect(() => {
-    if (!window.location.href.includes("/login")) {
-      fetchWithInterceptor(`http://localhost:4040/me`, {
-        method: "GET",
-      }).then(async (res) => {
-        const json = await res.json();
-        console.log({ json });
-
-        setUser(json.user);
+    if (
+      !window.location.href.includes("/login") &&
+      !window.location.href.includes("/cadastro")
+    ) {
+      axios.get(`/me`).then(async (res) => {
+        const _user = await res.data.user;
+        setUser(_user);
       });
     }
   }, []);
 
   return (
     <ThemeToggleContext.Provider
-      value={{ toggleTheme, isDarkMode, theme, user }}
+      value={{ toggleTheme, isDarkMode, theme, user, setUser }}
     >
       {children}
     </ThemeToggleContext.Provider>

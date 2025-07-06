@@ -25,12 +25,10 @@ import {
 } from "./styles";
 import { marked } from "marked";
 import { useRouter } from "next/navigation";
-import { Dispatch, SetStateAction } from "react";
 import { UserData, Conversation, Alert } from "@/types/User";
-import { useLogout } from "@/hooks/userLogout";
 import { Message } from "@/types/User";
-import { fetchWithInterceptor } from "@/lib";
 import { useTheme } from "@/context/ThemeContext";
+import { axios } from "@/lib";
 
 type QuerySources = {
   pdfPage: string;
@@ -89,21 +87,17 @@ export default function Chat({
   const handleLogout = async () => {
     try {
       router.push("/login");
-
-      const res = await fetchWithInterceptor("http://localhost:4040/logout");
-
-      // bug
-      if (res.ok) {
-        router.push("/login");
-      } else {
-        const data = await res.json();
-        alert("Erro ao sair: " + data.message);
-      }
+      await axios.get("/logout");
+      localStorage.removeItem("accessToken");
     } catch (error) {
       console.error("Erro no logout:", error);
       alert("Erro inesperado ao tentar sair.");
     }
   };
+
+  useEffect(() => {
+    console.log({ idItem });
+  }, [idItem]);
 
   const submitQuery = async () => {
     if (!query.trim()) return;
@@ -113,42 +107,45 @@ export default function Chat({
     setQuery("");
 
     try {
-      let currentConversationId = idItem;
+      //   let currentConversationId = idItem;
+      //   console.log({ currentConversationId, idItem });
 
-      console.log("Tentando criar conversa para o user:", user);
-      if (!currentConversationId) {
-        const res = await fetch(
-          `http://localhost:4040/conversations/${user._id}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: query }),
-          }
-        );
+      //   console.log("Tentando criar conversa para o user:", user);
+      //   if (!currentConversationId) {
+      //     const res = await axios.post(
+      //       `http://localhost:4040/conversations/${user._id}`,
+      //       { title: query },
+      //       {
+      //         headers: { "Content-Type": "application/json" },
+      //       }
+      //     );
 
-        if (!res.ok) {
-          throw new Error(`Erro ao criar conversa: status ${res.status}`);
-        }
+      //     if (!res.status) {
+      //       throw new Error(`Erro ao criar conversa: status ${res.status}`);
+      //     }
 
-        const data = await res.json();
-        const newConv = data.conversation;
+      //     const data = await res.data;
+      //     const newConv = data.conversation;
 
-        if (!newConv || !newConv._id) {
-          throw new Error("Resposta inválida: conversa criada sem _id");
-        }
+      //     if (!newConv || !newConv._id) {
+      //       throw new Error("Resposta inválida: conversa criada sem _id");
+      //     }
 
-        currentConversationId = newConv._id;
-        setIdItem(currentConversationId);
-        onItemCreated(newConv); // <- Aqui está a atualização do user.conversations
-      }
+      //     currentConversationId = newConv._id;
+      //     onItemCreated(newConv); // <- Aqui está a atualização do user.conversations
+      //   }
 
+      const accessToken = localStorage.getItem("accessToken");
       const resStream = await fetch(
         `http://localhost:4040/stream?q=${encodeURIComponent(
           query
-        )}&idItem=${currentConversationId}&email=${encodeURIComponent(
-          user.email
-        )}`,
-        { credentials: "include" }
+        )}&idItem=${idItem}&email=${encodeURIComponent(user.email)}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken?.replaceAll('"', "")}`,
+          },
+        }
       );
 
       if (!resStream.ok) {

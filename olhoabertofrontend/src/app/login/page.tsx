@@ -6,9 +6,12 @@ import { useRouter } from "next/navigation";
 import "./login.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { useTheme } from "@/context/ThemeContext";
+import { axios } from "@/lib";
 
 export default function Login() {
   const router = useRouter();
+  const { setUser } = useTheme();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -29,22 +32,23 @@ export default function Login() {
     setMessageType("");
 
     try {
-      console.log("Enviando dados:", formData);
-      const response = await fetch("http://localhost:4040/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await axios.post(
+        "http://localhost:4040/login",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      if (!response.ok) {
+      if (!response.status) {
         throw new Error("Email ou senha inválidos");
       }
 
-      const data = await response.json();
-      console.log("Login feito com sucesso!", data);
-      localStorage.setItem("accessToken", JSON.stringify(data.accessToken));
+      const { accessToken, user } = await response.data;
+      localStorage.setItem("accessToken", JSON.stringify(accessToken));
+      setUser(user);
 
       setMessage("Login feito com sucesso! Redirecionando...");
       setMessageType("succes");

@@ -2,11 +2,10 @@
 
 import { Chat, Sidebar, Modal } from "../@components";
 import { AppContainer } from "./styles";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserData } from "@/types/User";
 import type { Alert, Message } from "@/types/User";
-import { fetchWithInterceptor } from "@/lib";
+import { axios } from "@/lib";
 import { useTheme } from "@/context/ThemeContext";
 
 export default function Alertas() {
@@ -40,15 +39,10 @@ export default function Alertas() {
 
   const handleSelectAlert = async (item: Alert) => {
     try {
-      const res = await fetchWithInterceptor(
-        `http://localhost:4040/alerts/${item._id}`,
-        {
-          method: "GET",
-        }
-      );
+      const res = await axios.get(`http://localhost:4040/alerts/${item._id}`);
 
-      if (!res.ok) {
-        const errorText = await res.text();
+      if (!res.status) {
+        const errorText = res.statusText;
         throw new Error(
           `Erro ao carregar alerta: ${res.status} - ${errorText}`
         );
@@ -77,13 +71,13 @@ export default function Alertas() {
     }
   };
 
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      const res = await fetchWithInterceptor("http://localhost:4040/alerts");
-      const data = await res.json();
-      setAlerts(data.alerts);
-    };
+  const fetchAlerts = async () => {
+    const res = await axios.get("http://localhost:4040/alerts");
+    const data = await res.data;
+    setAlerts(data.alerts);
+  };
 
+  useEffect(() => {
     fetchAlerts();
   }, []);
 

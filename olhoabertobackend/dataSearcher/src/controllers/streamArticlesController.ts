@@ -3,25 +3,25 @@ import { SearchArticlesOutput } from "../types";
 import { logger } from "../utils";
 import { Articles, IAConfig, Users } from "@/infra/db";
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 
 export default async (req: Request, res: Response) => {
-  const { q: query, email, idConversation } = req.query;
-
-  if (!query) {
-    res.status(400).json({ message: "Query parameter 'q' is required." });
-  }
-
-  console.log("Stream request received:", { query, email, idConversation });
-
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Transfer-Encoding", "chunked");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
+  const { q: query, email, idItem } = req.query;
+
+  if (!query) {
+    res.status(400).json({ message: "Query parameter 'q' is required." });
+    return;
+  }
+
   try {
     const streamEmail = typeof email === "string" ? email : undefined;
     const streamIdConversation =
-      typeof idConversation === "string" ? idConversation : undefined;
+      typeof idItem === "string" ? idItem : undefined;
 
     for await (const chunk of streamArticles(
       streamEmail,
@@ -45,6 +45,7 @@ async function* streamArticles(
   idConversation: string | undefined
 ): AsyncGenerator<{ streamArticles: SearchArticlesOutput }> {
   logger(`Searching for: ${query}...`);
+  console.log({ email, idConversation });
 
   const llmHub = new LLMHub();
   const queryVector = await llmHub.embedQuery(query);
@@ -84,7 +85,6 @@ async function* streamArticles(
 
   for await (const chunk of stream) {
     answer += chunk;
-    console.log({ answer });
     yield {
       streamArticles: {
         answer,
@@ -93,18 +93,39 @@ async function* streamArticles(
     };
   }
 
-  if (email !== undefined && idConversation !== undefined)
-    await Users.updateOne(
-      { email, "conversations._id": idConversation },
-      {
-        $push: {
-          "conversations.$.messages": {
-            $each: [
-              { content: query, role: "user" },
-              { content: answer, role: "assistant" },
-            ],
-          },
+  if (email) {
+    if (idConversation) {
+      await Users.updateOne(
+        {
+          email,
+          "conversations._id": new mongoose.Types.ObjectId(idConversation),
         },
-      }
-    );
+        {
+          $push: {
+            "conversations.$.messages": {
+              $each: [
+                { content: query, role: "user" },
+                { content: answer, role: "assistant" },
+              ],
+            },
+          },
+        }
+      );
+    } else {
+      const newConversation = {
+        _id: new mongoose.Types.ObjectId(),
+        messages: [
+          { content: query, role: "user" },
+          { content: answer, role: "assistant" },
+        ],
+        createdAt: new Date(),
+      };
+
+      await Users.updateOne(
+        { email },
+        { $push: { conversations: newConversation } }
+      );
+      return newConversation._id;
+    }
+  }
 }

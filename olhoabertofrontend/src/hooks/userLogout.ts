@@ -1,5 +1,6 @@
 "use client";
 
+import { axios } from "@/lib";
 import { useRouter } from "next/navigation";
 
 export function useLogout() {
@@ -14,13 +15,12 @@ export function useLogout() {
         "Content-Type": "application/json",
       };
 
-      const res = await fetch("http://localhost:4040/logout", { headers });
-      console.log(res);
+      const res = await axios.get("http://localhost:4040/logout", { headers });
 
-      if (res.ok) {
+      if (res.status) {
         router.push("/login");
       } else {
-        const data = await res.json();
+        const data = await res.data;
         alert("Erro ao sair: " + data.message);
       }
     } catch (error) {

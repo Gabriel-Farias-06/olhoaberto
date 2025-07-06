@@ -8,8 +8,11 @@ const JWT_SECRET = process.env.JWT_SECRET || "chave";
 export default async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    console.log({ email, password });
+
     if (!email || !password) {
       res.status(400).json({ message: "Email and password are required" });
+      return;
     }
 
     const user = await Users.findOne({ email });
@@ -24,6 +27,7 @@ export default async (req: Request, res: Response) => {
     );
     if (!passwordMatch) {
       res.status(401).json({ message: "Invalid credentials" });
+      return;
     }
 
     const accessToken = jwt.sign(
@@ -41,6 +45,7 @@ export default async (req: Request, res: Response) => {
 
     res.status(200).json({
       accessToken,
+      user,
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {

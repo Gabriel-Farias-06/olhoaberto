@@ -18,7 +18,7 @@ export default async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    res.status(404).json({ message: "Usuário não encontrado." });
+    res.status(400).json({ message: "Usuário não encontrado." });
     return;
   }
 
@@ -27,7 +27,7 @@ export default async (req: Request, res: Response) => {
   );
 
   if (!conversation) {
-    res.status(404).json({ message: "Conversa não encontrada." });
+    res.status(400).json({ message: "Conversa não encontrada." });
     return;
   }
 

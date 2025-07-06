@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useLogout } from "@/hooks/userLogout";
 import { Alert, Conversation } from "@/types/User";
 import ModalConfirm from "../Modal/ModalConfirm";
+import { axios } from "@/lib";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -50,7 +51,6 @@ export default function Sidebar({
     useState(false);
   const [conversationToDelete, setConversationToDelete] =
     useState<Conversation | null>(null);
-
   const [alertToDelete, setAlertToDelete] = useState<Alert | null>(null);
 
   const handleOpenDeleteModal = (item: Conversation | Alert) => {
@@ -69,18 +69,12 @@ export default function Sidebar({
     if (!itemToDelete) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:4040/${itemType === "alert" ? "alert" : "items"}/${
-          itemToDelete._id
-        }`,
-        {
-          method: "DELETE",
-        }
+      const res = await axios.delete(
+        `http://localhost:4040/${itemType}s/${itemToDelete._id}`
       );
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error(`Erro ao deletar ${itemType}:`, errorData.message);
+      if (!res.status) {
+        console.error(`Erro ao deletar ${itemType}:`, res.statusText);
         return;
       }
 
@@ -153,10 +147,10 @@ export default function Sidebar({
 
     return (
       <ul className="conversation-list">
-        {Object.entries(grouped).map(([section, convs]) =>
+        {Object.entries(grouped).map(([section, convs], i) =>
           convs.length > 0 ? (
             <ItemBox
-              key={section}
+              key={section + i}
               title={section}
               items={convs}
               selectedItemId={selectedItemId as string}
@@ -183,7 +177,7 @@ export default function Sidebar({
 
           {itemType === "alert" ? (
             <button
-              aria-label="Criar nova conversa"
+              aria-label="Criar novo alerta"
               onClick={() => openModal && openModal("alert")}
               style={{ background: "none", border: "none", cursor: "pointer" }}
             >
@@ -290,7 +284,7 @@ const ItemBox: React.FC<ItemBoxProps> = ({
   handleOpenDeleteModal,
 }) => {
   return (
-    <li className="conversation-group" key={title}>
+    <li className="conversation-group">
       <p className="conversation-title">{title}</p>
       <ul>
         {items.map((item: any) => (

@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 
 export default async (req: Request, res: Response) => {
   const { name, description } = req.body;
+  console.log({ name, description });
 
   if (!name || !description)
     res.status(400).json({ message: "Todos os campos são obrigatórios." });

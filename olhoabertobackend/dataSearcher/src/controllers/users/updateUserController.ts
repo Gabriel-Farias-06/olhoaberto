@@ -15,7 +15,7 @@ export default async (req: Request, res: Response) => {
 
   const user = await Users.findOne({ email });
   if (!user) {
-    res.status(404).json({ message: "User not found" });
+    res.status(400).json({ message: "User not found" });
   }
 
   const passwordMatch = await bcrypt.compare(

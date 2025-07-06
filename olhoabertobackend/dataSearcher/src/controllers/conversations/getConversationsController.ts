@@ -19,7 +19,7 @@ export default async function getConversationsController(
     })
     .lean();
 
-  if (!user) res.status(404).json({ message: "Usuário não encontrado." });
+  if (!user) res.status(400).json({ message: "Usuário não encontrado." });
 
   res.status(200).json({ conversations: user?.conversations });
 }

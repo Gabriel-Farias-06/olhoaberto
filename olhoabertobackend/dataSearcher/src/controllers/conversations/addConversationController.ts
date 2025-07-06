@@ -7,7 +7,7 @@ export default async (req: Request, res: Response) => {
     if (!userId) res.status(400).json({ message: "The userId is required" });
 
     const user = await Users.findById(userId);
-    if (!user) res.status(404).json({ message: "User not found" });
+    if (!user) res.status(400).json({ message: "User not found" });
 
     const newConversation = { messages: [], startedAt: new Date() };
 

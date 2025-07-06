@@ -10,13 +10,17 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
   if (authHeader === undefined || !authHeader?.startsWith("Bearer ")) {
     res.status(401).json({ message: "Not authenticated" });
+    return;
   }
-
   const accessToken = (authHeader as string).split(" ")[1];
 
   try {
     const user = await Users.findOne({ accessToken });
-    if (!user) res.status(401).json({ message: "Invalid or expired token" });
+
+    if (!user) {
+      res.status(401).json({ message: "Invalid or expired token" });
+      return;
+    }
 
     const decoded = jwt.verify(accessToken, JWT_SECRET);
 

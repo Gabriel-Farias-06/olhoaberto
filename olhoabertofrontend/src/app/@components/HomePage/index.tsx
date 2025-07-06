@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { UserData } from "@/types/User";
 import type { Conversation, Message } from "@/types/User";
 import { useTheme } from "@/context/ThemeContext";
+import { axios } from "@/lib";
 
 export default function HomePage() {
   const router = useRouter();
@@ -51,19 +52,15 @@ export default function HomePage() {
 
   const handleSelectConversation = async (conversation: Conversation) => {
     try {
-      const res = await fetch(
-        `http://localhost:4040/conversations/${conversation._id}`,
-        {}
+      const res = await axios.get(
+        `http://localhost:4040/conversations/${conversation._id}`
       );
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(
-          `Erro ao carregar conversa: ${res.status} - ${errorText}`
-        );
+      if (!res.status) {
+        throw new Error(`Erro ao carregar conversa: ${res.statusText}`);
       }
 
-      const fullConversation = await res.json();
+      const fullConversation = await res.data;
 
       setSelectedConversation(fullConversation.conversation);
       setIdConversation(fullConversation.conversation._id);

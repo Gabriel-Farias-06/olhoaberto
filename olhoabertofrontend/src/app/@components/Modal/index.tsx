@@ -22,6 +22,7 @@ import {
 
 import ModalConfirm from "./ModalConfirm";
 import { useTheme } from "@/context/ThemeContext";
+import { axios } from "@/lib";
 
 interface ModalProps {
   closeModal: () => void;
@@ -55,17 +56,18 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
   const { user } = useTheme();
 
   const handleConfirmSaveAdmin = () => {
-    fetch("http://localhost:4040/instructions", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+    axios
+      .put("http://localhost:4040/instructions", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-      body: JSON.stringify({ instructions }),
-    })
+        body: JSON.stringify({ instructions }),
+      })
       .then((res) => {
-        if (!res.ok) throw new Error("Erro ao salvar instruções");
-        return res.json();
+        if (!res.status) throw new Error("Erro ao salvar instruções");
+        return res.data;
       })
       .then(() => {
         setShowConfirmSaveAdmin(false);
@@ -79,10 +81,9 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
 
   useEffect(() => {
     if (activeTab === "admin") {
-      fetch("http://localhost:4040/instructions", {
-        method: "GET",
-      })
-        .then((res) => res.json())
+      axios
+        .get("http://localhost:4040/instructions")
+        .then((res) => res.data)
         .then((data) => setInstructions(data.instructions || ""))
         .catch((err) => console.error("Erro ao buscar instruções:", err));
     }
@@ -107,17 +108,21 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
         return;
       }
 
-      const response = await fetch("http://localhost:4040/alert", {
-        method: "POST",
+      const response = await axios.post(
+        "http://localhost:4040/alert",
+        {
+          name,
+          description,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description }), // <-- aqui é "name"
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Erro ao criar alerta.");
+      if (!response) {
+        throw new Error("Erro ao criar alerta.");
       }
 
       setShowConfirmCreateAlert(false);
@@ -136,23 +141,21 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
 
   const handleConfirmDeleteUser = async () => {
     try {
-      const response = await fetch("http://localhost:4040/deleteUser", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const response = await axios.post(
+        "http://localhost:4040/deleteUser",
+        { password: userPassword },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-        body: JSON.stringify({ password: userPassword }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erro ao deletar conta.");
+      if (!response.status) {
+        throw new Error("Erro ao deletar conta.");
       }
 
-      await fetch("http://localhost:4040/logout", {
-        method: "POST",
-      });
+      await axios.get("http://localhost:4040/logout");
 
       window.location.reload();
     } catch (error: unknown) {
@@ -181,7 +184,7 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
     }
 
     try {
-      const response = await fetch("http://localhost:4040/updateUser", {
+      const response = await axios.put("http://localhost:4040/updateUser", {
         method: "PUT",
 
         headers: {
@@ -194,21 +197,19 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
         }),
       });
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || "Erro ao atualizar o perfil.");
+      if (!response.status) {
+        throw new Error("Erro ao atualizar o perfil.");
       }
 
-      const result = await response.json();
-      console.log(result.message);
+      const result = response.data;
 
       setShowConfirmSaveUser(false);
 
-      await fetch("http://localhost:4040/logout", {
-        method: "POST",
-      });
+      // await fetch("http://localhost:4040/logout", {
+      //   method: "POST",
+      // });
 
-      window.location.href = "/login";
+      // window.location.href = "/login";
     } catch (error) {
       console.error("Erro ao atualizar perfil:", error);
       alert("Erro ao atualizar perfil. Verifique sua senha e tente novamente.");
@@ -217,30 +218,16 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
 
   const handleConfirmDeleteAllConversations = async () => {
     try {
-      const response = await fetch("http://localhost:4040/conversations", {
-        method: "DELETE",
-      });
-
-      const contentType = response.headers.get("content-type") || "";
-
-      if (contentType.includes("application/json")) {
-        const data = await response.json();
-
-        console.log("Status:", response.status);
-        console.log("Response data:", data);
-
-        if (!response.ok) {
-          throw new Error(
-            data.message || "Erro ao deletar todas as conversas."
-          );
+      const response = await axios.delete(
+        "http://localhost:4040/conversations",
+        {
+          method: "DELETE",
         }
-      } else {
-        const text = await response.text();
-        console.log("Resposta não JSON:", text);
+      );
 
-        if (!response.ok) {
-          throw new Error(text || "Erro ao deletar todas as conversas.");
-        }
+      const data = await response.data;
+      if (!response.status) {
+        throw new Error(data.message || "Erro ao deletar todas as conversas.");
       }
 
       setShowConfirmDeleteAllConversations(false);

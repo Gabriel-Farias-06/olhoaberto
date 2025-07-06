@@ -12,7 +12,7 @@ export default async function deleteAlertController(
       user: req.user?._id,
     }).lean();
 
-    if (!alert) res.status(404).json({ message: "Alerta não encontrado." });
+    if (!alert) res.status(400).json({ message: "Alerta não encontrado." });
 
     res.status(200).json({ alert });
   } catch (err) {

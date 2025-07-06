@@ -16,7 +16,7 @@ export default async (req: Request, res: Response) => {
     );
 
     if (!updatedUser) {
-      res.status(404).json({ message: "Usuário não encontrado." });
+      res.status(400).json({ message: "Usuário não encontrado." });
     }
 
     res

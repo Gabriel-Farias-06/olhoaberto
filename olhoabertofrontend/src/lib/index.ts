@@ -1,1 +1,1 @@
-export { default as fetchWithInterceptor } from "./fetchWithInterceptor";
+export { default as axios } from "./axios";

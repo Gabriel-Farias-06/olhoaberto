@@ -77,7 +77,7 @@ connectDb().then(async () => {
 
   app.post("/alert", authenticationMiddleware, createAlertsController);
 
-  app.delete("/alert/:id", authenticationMiddleware, deleteAlertController);
+  app.delete("/alerts/:id", authenticationMiddleware, deleteAlertController);
 
   app.get(
     "/conversations/:conversationId",
@@ -103,7 +103,7 @@ connectDb().then(async () => {
 
   app.put("/updateUser", authenticationMiddleware, updateUserController);
 
-  app.delete("/deleteUser", authenticationMiddleware, deleteUserController);
+  app.post("/deleteUser", authenticationMiddleware, deleteUserController);
 
   app.get("/instructions", authenticationMiddleware, getInstructionsController);
 
