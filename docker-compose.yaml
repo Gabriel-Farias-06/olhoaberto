@@ -14,7 +14,21 @@ services:
     networks:
       - default
 
-  olhoabertobackend:
+  datafeeder:
+    build:
+      context: ./olhoabertobackend/dataFeeder
+      dockerfile: Dockerfile
+    env_file:
+      - ./olhoabertobackend/dataFeeder/.env.prod
+    environment:
+      NODE_ENV: prod
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+    networks:
+      - default
+
+  datasearcher:
     build:
       context: ./olhoabertobackend/dataSearcher
       dockerfile: Dockerfile

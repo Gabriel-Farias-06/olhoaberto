@@ -6,7 +6,11 @@ import mongoose from "mongoose";
 import amqplib from "amqplib";
 import { BROKER } from "./db/broker";
 import cron from "node-cron";
-dotenv.config();
+import path from "path";
+
+dotenv.config({
+  path: path.resolve(process.cwd(), `.env.${process.env.NODE_ENV || "dev"}`),
+});
 
 mongoose.connect(process.env.MONGO_DB_URL!).then(async () => {
   logger("-=-=-=-=-=-=-= DATA FEEDER STARTED -=-=-=-=-=-=-=");
