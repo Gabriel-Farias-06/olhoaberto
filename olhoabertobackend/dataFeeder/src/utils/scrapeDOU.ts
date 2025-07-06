@@ -4,8 +4,8 @@ import { BROKER } from "../db/broker";
 
 const months = [
   // "Janeiro",
-  "Fevereiro",
-  // "Março",
+  // "Fevereiro",
+  "Março",
   // "Abril",
   // "Maio",
   // "Junho",
@@ -20,7 +20,7 @@ const months = [
 export default async () => {
   try {
     logger("Scraping DOU...");
-    for (let year = 2016; year <= 2016; year++) {
+    for (let year = 2021; year <= 2021; year++) {
       for (const month of months) {
         await readContent(year, month);
       }
