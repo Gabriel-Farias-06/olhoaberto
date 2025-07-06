@@ -1,5 +1,6 @@
 "use client";
 
+import { Virtuoso } from "react-virtuoso";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
@@ -354,16 +355,32 @@ export default function Chat({
       </ChatHeader>
 
       <ChatMessages ref={messagesEndRef}>
-        {/* <div className="message user">Quanto o governo investiu em educação?</div>
-                <div className="message assistant">Em 2025, foi investido quantos reais em educação?</div> */}
-
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`message ${msg.role}`}
-            dangerouslySetInnerHTML={{ __html: msg.content }}
-          />
-        ))}
+        <Virtuoso
+          style={{ flex: 1 }}
+          totalCount={messages.length}
+          components={{
+            // Make each Virtuoso item a flex column so align-self works
+            Item: ({ children, ...props }) => (
+              <div
+                {...props}
+                style={{ display: "flex", flexDirection: "column" }}
+              >
+                {children}
+              </div>
+            ),
+          }}
+          itemContent={(index) => {
+            const { role, content } = messages[index];
+            return (
+              <div
+                className={`message ${role}`}
+                dangerouslySetInnerHTML={{
+                  __html: role === "assistant" ? marked(content) : content,
+                }}
+              />
+            );
+          }}
+        />
 
         {isLoading && (
           <div className="message assistant loading">Buscando resposta...</div>
