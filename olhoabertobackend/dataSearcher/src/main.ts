@@ -41,6 +41,7 @@ connectDb().then(async () => {
       origin: [
         process.env.DOMAIN ?? "",
         "http://localhost:3000",
+        "http://localhost:3001",
         "https://dc52-2804-2098-300-97ce-f93f-55b6-b3ff-2c4b.ngrok-free.app",
       ],
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
