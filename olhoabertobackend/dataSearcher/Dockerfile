@@ -7,7 +7,7 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy only package files first for better layer caching
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json ./
 
 # Install dependencies (including Playwright dependencies)
 RUN pnpm install
