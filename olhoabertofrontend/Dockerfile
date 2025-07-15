@@ -6,10 +6,10 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copia arquivos de definição de dependências
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json ./
 
 # Instala as dependências com pnpm (sem dev, se quiser)
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --prod
 
 # Etapa de build
 FROM node:21-alpine AS builder

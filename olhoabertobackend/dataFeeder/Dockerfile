@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/root/.npm \
     npm i
 
 # Install dependencies
-RUN pnpm i --frozen-lockfile
+RUN pnpm i 
 
 # Copy the rest of the application code
 COPY . .
