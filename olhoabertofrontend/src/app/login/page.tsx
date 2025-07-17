@@ -103,7 +103,7 @@ export default function Login() {
             </div>
             <div className="login-section-box">
               <p>
-                <a href="http://localhost:3000/cadastro">
+                <a href="http://localhost:3002/cadastro">
                   Não tem uma conta? Clique aqui
                 </a>
               </p>
