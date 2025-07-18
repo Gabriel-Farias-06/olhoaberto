@@ -52,7 +52,7 @@ export default function Cadastro() {
 
       setTimeout(() => {
         router.push("/login");
-      }, 3002);
+      }, 3009);
     } catch (err: any) {
       setMessage(err.message || "Erro ao cadastrar");
       setMessageType("error");

@@ -35,7 +35,7 @@ services:
       context: ./olhoabertofrontend
       dockerfile: Dockerfile
     ports:
-      - "3002:3002"
+      - "3009:3009"
     environment:
       NODE_ENV: prod
     networks:
@@ -47,10 +47,10 @@ services:
   #   env_file:
   #     - ./.env
   #   environment:
-  #     NGROK_TUNNEL_PORT: 3002
+  #     NGROK_TUNNEL_PORT: 3009
   #     NGROK_TUNNEL_HOST: olhoabertofrontend
   #     NGROK_TUNNEL_PROTO: http
-  #   command: "http olhoabertofrontend:3002"
+  #   command: "http olhoabertofrontend:3009"
   #   ports:
   #     - "4040:4040"
   #   depends_on:

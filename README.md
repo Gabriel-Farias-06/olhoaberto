@@ -156,7 +156,7 @@ Assegure-se de que as variáveis de ambiente estejam configuradas corretamente e
 ## Acessando a Aplicação
 
 - Frontend local:  
-  [http://localhost:3002](http://localhost:3002)
+  [http://localhost:3009](http://localhost:3009)
 
 - URL pública Ngrok:  
   Acesse a dashboard Ngrok em [http://localhost:4040](http://localhost:4040) para ver o endereço HTTPS público para o frontend.
