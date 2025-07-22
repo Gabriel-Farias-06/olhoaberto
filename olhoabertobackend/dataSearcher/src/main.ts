@@ -38,12 +38,7 @@ connectDb().then(async () => {
   const app = express();
   app.use(
     cors({
-      origin: [
-        process.env.DOMAIN ?? "",
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "https://dc52-2804-2098-300-97ce-f93f-55b6-b3ff-2c4b.ngrok-free.app",
-      ],
+      origin: ["*"],
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
     })
