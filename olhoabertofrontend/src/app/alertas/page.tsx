@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import type { Alert, Message } from "@/types/User";
 import { axios } from "@/lib";
 import { useTheme } from "@/context/ThemeContext";
+import { API_URL } from "@/constants";
 
 export default function Alertas() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function Alertas() {
 
   const handleSelectAlert = async (item: Alert) => {
     try {
-      const res = await axios.get(`http://localhost:4040/alerts/${item._id}`);
+      const res = await axios.get(`${API_URL}/alerts/${item._id}`);
 
       if (!res.status) {
         const errorText = res.statusText;
@@ -72,7 +73,7 @@ export default function Alertas() {
   };
 
   const fetchAlerts = async () => {
-    const res = await axios.get("http://localhost:4040/alerts");
+    const res = await axios.get(`${API_URL}/alerts`);
     const data = await res.data;
     setAlerts(data.alerts);
   };

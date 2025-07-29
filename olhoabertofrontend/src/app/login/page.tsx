@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useTheme } from "@/context/ThemeContext";
 import { axios } from "@/lib";
+import { API_URL } from "@/constants";
 
 export default function Login() {
   const router = useRouter();
@@ -32,15 +33,11 @@ export default function Login() {
     setMessageType("");
 
     try {
-      const response = await axios.post(
-        "http://localhost:4040/login",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}/login`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.status) {
         throw new Error("Email ou senha inválidos");

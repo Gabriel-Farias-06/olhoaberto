@@ -1,9 +1,10 @@
+import { API_URL } from "@/constants";
 import axios from "axios";
 
 const isBrowser = typeof window !== "undefined";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:4040",
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },

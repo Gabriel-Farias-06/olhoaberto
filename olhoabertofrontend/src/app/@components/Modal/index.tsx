@@ -23,6 +23,7 @@ import {
 import ModalConfirm from "./ModalConfirm";
 import { useTheme } from "@/context/ThemeContext";
 import { axios } from "@/lib";
+import { API_URL } from "@/constants";
 
 interface ModalProps {
   closeModal: () => void;
@@ -57,7 +58,7 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
 
   const handleConfirmSaveAdmin = () => {
     axios
-      .put("http://localhost:4040/instructions", {
+      .put(`${API_URL}/instructions`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +83,7 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
   useEffect(() => {
     if (activeTab === "admin") {
       axios
-        .get("http://localhost:4040/instructions")
+        .get(`${API_URL}/instructions`)
         .then((res) => res.data)
         .then((data) => setInstructions(data.instructions || ""))
         .catch((err) => console.error("Erro ao buscar instruções:", err));
@@ -109,7 +110,7 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
       }
 
       const response = await axios.post(
-        "http://localhost:4040/alert",
+        `${API_URL}/alert`,
         {
           name,
           description,
@@ -142,7 +143,7 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
   const handleConfirmDeleteUser = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4040/deleteUser",
+        `${API_URL}/deleteUser`,
         { password: userPassword },
         {
           headers: {
@@ -155,7 +156,7 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
         throw new Error("Erro ao deletar conta.");
       }
 
-      await axios.get("http://localhost:4040/logout");
+      await axios.get(`${API_URL}/logout`);
 
       window.location.reload();
     } catch (error: unknown) {
@@ -184,7 +185,7 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
     }
 
     try {
-      const response = await axios.put("http://localhost:4040/updateUser", {
+      const response = await axios.put(`${API_URL}/updateUser`, {
         method: "PUT",
 
         headers: {
@@ -205,7 +206,7 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
 
       setShowConfirmSaveUser(false);
 
-      // await fetch("http://localhost:4040/logout", {
+      // await fetch("http://${API_URL}/logout", {
       //   method: "POST",
       // });
 
@@ -218,12 +219,9 @@ export default function Modal({ closeModal, initialTab }: ModalProps) {
 
   const handleConfirmDeleteAllConversations = async () => {
     try {
-      const response = await axios.delete(
-        "http://localhost:4040/conversations",
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await axios.delete(`${API_URL}/conversations`, {
+        method: "DELETE",
+      });
 
       const data = await response.data;
       if (!response.status) {

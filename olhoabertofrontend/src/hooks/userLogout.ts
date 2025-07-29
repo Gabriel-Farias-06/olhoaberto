@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/constants";
 import { axios } from "@/lib";
 import { useRouter } from "next/navigation";
 
@@ -15,7 +16,7 @@ export function useLogout() {
         "Content-Type": "application/json",
       };
 
-      const res = await axios.get("http://localhost:4040/logout", { headers });
+      const res = await axios.get(`${API_URL}/logout`, { headers });
 
       if (res.status) {
         router.push("/login");

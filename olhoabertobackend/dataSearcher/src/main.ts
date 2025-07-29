@@ -47,64 +47,54 @@ connectDb().then(async () => {
 
   alertConsumer();
 
-  app.get("/stream", authenticationMiddleware, streamArticlesController);
-
-  app.post(
+  const router = express.Router();
+  router.get("/stream", authenticationMiddleware, streamArticlesController);
+  router.post(
     "/conversations/:userId",
     authenticationMiddleware,
     addConversationController
   );
-
-  app.post("/signup", signUpController);
-
-  app.get("/me", authenticationMiddleware, getMeController);
-
-  app.get(
+  router.post("/signup", signUpController);
+  router.get("/me", authenticationMiddleware, getMeController);
+  router.get(
     "/conversations",
     authenticationMiddleware,
     getConversationsController
   );
-
-  app.get("/alerts", authenticationMiddleware, getAlertsController);
-
-  app.get("/alerts/:id", authenticationMiddleware, getAlertsByIdController);
-
-  app.post("/alert", authenticationMiddleware, createAlertsController);
-
-  app.delete("/alerts/:id", authenticationMiddleware, deleteAlertController);
-
-  app.get(
+  router.get("/alerts", authenticationMiddleware, getAlertsController);
+  router.get("/alerts/:id", authenticationMiddleware, getAlertsByIdController);
+  router.post("/alert", authenticationMiddleware, createAlertsController);
+  router.delete("/alerts/:id", authenticationMiddleware, deleteAlertController);
+  router.get(
     "/conversations/:conversationId",
     authenticationMiddleware,
     getConversationByIdController
   );
-
-  app.delete(
+  router.delete(
     "/conversations",
     authenticationMiddleware,
     deleteAllUserConversationsController
   );
-
-  app.delete(
+  router.delete(
     "/conversations/:conversationId",
     authenticationMiddleware,
     deleteOneConversationController
   );
-
-  app.post("/login", loginController);
-
-  app.get("/logout", authenticationMiddleware, logoutController);
-
-  app.put("/updateUser", authenticationMiddleware, updateUserController);
-
-  app.post("/deleteUser", authenticationMiddleware, deleteUserController);
-
-  app.get("/instructions", authenticationMiddleware, getInstructionsController);
-
-  app.put("/instructions", authenticationMiddleware, (req, res) => {
+  router.post("/login", loginController);
+  router.get("/logout", authenticationMiddleware, logoutController);
+  router.put("/updateUser", authenticationMiddleware, updateUserController);
+  router.post("/deleteUser", authenticationMiddleware, deleteUserController);
+  router.get(
+    "/instructions",
+    authenticationMiddleware,
+    getInstructionsController
+  );
+  router.put("/instructions", authenticationMiddleware, (req, res) => {
     const { instructions } = req.body;
     updateInstructionsController(req.user?.email as string, instructions, res);
   });
+
+  app.use("/api", router);
 
   app.listen(4040, () => {
     console.info("Server is running on http://localhost:4040");

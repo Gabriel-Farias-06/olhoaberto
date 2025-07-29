@@ -7,6 +7,7 @@ import "./cadastro.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { axios } from "@/lib";
+import { API_URL } from "@/constants";
 
 export default function Cadastro() {
   const router = useRouter();
@@ -32,15 +33,11 @@ export default function Cadastro() {
 
     try {
       console.log("Enviando dados:", formData);
-      const response = await axios.post(
-        "http://localhost:4040/signup",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}/signup`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.status) {
         throw new Error("Dados inválidos ou usuário já cadastrado");
